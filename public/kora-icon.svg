@@ -1,18 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <defs>
-    <linearGradient id="koraBg" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0a1224" />
-      <stop offset="100%" stop-color="#050810" />
-    </linearGradient>
-    <linearGradient id="koraRing" x1="20" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#22d3ee" />
-      <stop offset="55%" stop-color="#6366f1" />
-      <stop offset="100%" stop-color="#34d399" />
-    </linearGradient>
-  </defs>
-  <rect width="128" height="128" rx="32" fill="url(#koraBg)" />
-  <circle cx="64" cy="64" r="38" stroke="url(#koraRing)" stroke-width="6" opacity="0.92" />
-  <circle cx="64" cy="64" r="18" fill="url(#koraRing)" opacity="0.28" />
-  <circle cx="64" cy="64" r="10" fill="#f8fafc" />
-  <path d="M64 18v12M64 98v12M18 64h12M98 64h12" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+  <rect width="128" height="128" rx="30" fill="#000000" />
+  <circle cx="64" cy="64" r="36" stroke="#f5f5f7" stroke-width="5" opacity="0.92" />
+  <circle cx="64" cy="64" r="14" fill="#fa2d48" />
 </svg>

@@ -3,114 +3,119 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --in-oklab: ;
-  --in-oklch: ;
-  --kora-bg: #eef2fa;
-  --kora-text: #0f172a;
-  --kora-muted: #52607a;
-  --kora-glass-bg: rgba(255, 255, 255, 0.72);
-  --kora-glass-elevated: rgba(255, 255, 255, 0.86);
-  --kora-glass-border: rgba(255, 255, 255, 0.92);
-  --kora-glass-highlight: rgba(255, 255, 255, 0.98);
-  --kora-glass-shadow: 0 16px 40px -12px rgba(24, 39, 75, 0.12), 0 4px 12px -4px rgba(24, 39, 75, 0.06);
-  --kora-accent: #0284c7;
-  --kora-accent-soft: rgba(2, 132, 199, 0.14);
+  --kora-bg: #f5f5f7;
+  --kora-surface: rgba(255, 255, 255, 0.82);
+  --kora-surface-floating: rgba(255, 255, 255, 0.72);
+  --kora-surface-sub: rgba(0, 0, 0, 0.04);
+  --kora-text: #1d1d1f;
+  --kora-muted: #86868b;
+  --kora-hairline: rgba(0, 0, 0, 0.06);
+  --kora-accent: #fa2d48;
+  --kora-shadow-card: 0 2px 16px -4px rgba(0, 0, 0, 0.05);
+  --kora-shadow-floating: 0 12px 32px -8px rgba(0, 0, 0, 0.14);
 }
 
 html.dark {
-  --kora-bg: #050810;
-  --kora-text: #f4f7fb;
-  --kora-muted: #93a1ba;
-  --kora-glass-bg: rgba(255, 255, 255, 0.055);
-  --kora-glass-elevated: rgba(18, 25, 42, 0.72);
-  --kora-glass-border: rgba(255, 255, 255, 0.13);
-  --kora-glass-highlight: rgba(255, 255, 255, 0.22);
-  --kora-glass-shadow: 0 22px 48px -16px rgba(0, 0, 0, 0.75), 0 8px 20px -8px rgba(0, 0, 0, 0.5);
-  --kora-accent: #22d3ee;
-  --kora-accent-soft: rgba(34, 211, 238, 0.16);
-}
-
-@supports (linear-gradient(in oklab, white, black)) {
-  :root {
-    --in-oklab: in oklab;
-    --in-oklch: in oklch;
-  }
+  --kora-bg: #000000;
+  --kora-surface: rgba(28, 28, 30, 0.78);
+  --kora-surface-floating: rgba(34, 34, 36, 0.72);
+  --kora-surface-sub: rgba(255, 255, 255, 0.06);
+  --kora-text: #f5f5f7;
+  --kora-muted: #8e8e93;
+  --kora-hairline: rgba(255, 255, 255, 0.07);
+  --kora-accent: #fa2d48;
+  --kora-shadow-card: 0 4px 20px -6px rgba(0, 0, 0, 0.45);
+  --kora-shadow-floating: 0 16px 40px -10px rgba(0, 0, 0, 0.75);
 }
 
 html,
 body {
   background-color: var(--kora-bg);
   color: var(--kora-text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
   min-height: 100dvh;
 }
 
+/* Pure subtle neutral backdrop — zero cliché neon/rainbow gradients */
 .kora-ambient-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
   background: var(--kora-bg);
 }
 
 .dark .kora-ambient-canvas::before {
   content: "";
   position: absolute;
-  inset: -15%;
-  background:
-    radial-gradient(680px 540px at 14% 8%, rgba(34, 211, 238, 0.16), transparent 65%),
-    radial-gradient(620px 520px at 88% 18%, rgba(99, 102, 241, 0.18), transparent 68%),
-    radial-gradient(640px 520px at 52% 88%, rgba(16, 185, 129, 0.12), transparent 68%);
-  filter: blur(28px);
+  inset: 0;
+  background: radial-gradient(900px 500px at 50% -10%, rgba(255, 255, 255, 0.045), transparent 70%);
 }
 
 html.light .kora-ambient-canvas::before {
   content: "";
   position: absolute;
-  inset: -15%;
-  background:
-    radial-gradient(720px 560px at 12% 6%, rgba(167, 139, 250, 0.28), transparent 66%),
-    radial-gradient(680px 540px at 88% 14%, rgba(56, 189, 248, 0.25), transparent 68%),
-    radial-gradient(700px 560px at 50% 92%, rgba(251, 191, 36, 0.18), transparent 70%);
-  filter: blur(32px);
+  inset: 0;
+  background: radial-gradient(900px 500px at 50% -10%, rgba(255, 255, 255, 0.8), transparent 70%);
 }
 
+/* Borderless / ultra-hairline Liquid Glass surfaces */
 .liquid-glass {
-  background: var(--kora-glass-bg);
-  backdrop-filter: blur(26px) saturate(185%);
-  -webkit-backdrop-filter: blur(26px) saturate(185%);
-  border: 1px solid var(--kora-glass-border);
-  box-shadow:
-    inset 0 1px 0 0 var(--kora-glass-highlight),
-    var(--kora-glass-shadow);
+  background: var(--kora-surface);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 0.5px solid var(--kora-hairline);
+  box-shadow: var(--kora-shadow-card);
 }
 
+/* Apple Music style floating Gaussian-blurred chrome */
 .liquid-glass-elevated {
-  background: var(--kora-glass-elevated);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--kora-glass-border);
-  box-shadow:
-    inset 0 1px 0 0 var(--kora-glass-highlight),
-    var(--kora-glass-shadow);
+  background: var(--kora-surface-floating);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  border: 0.5px solid var(--kora-hairline);
+  box-shadow: var(--kora-shadow-floating);
 }
 
 .liquid-pill {
-  background: var(--kora-glass-bg);
-  backdrop-filter: blur(20px) saturate(175%);
-  -webkit-backdrop-filter: blur(20px) saturate(175%);
-  border: 1px solid var(--kora-glass-border);
-  box-shadow: inset 0 1px 0 0 var(--kora-glass-highlight);
+  background: var(--kora-surface-sub);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 0.5px solid var(--kora-hairline);
+}
+
+.kora-hairline-divider {
+  border-color: var(--kora-hairline);
+}
+
+.kora-muted {
+  color: var(--kora-muted);
+}
+
+.btn-primary {
+  background-color: #1d1d1f;
+  color: #ffffff;
+}
+html.dark .btn-primary {
+  background-color: #f5f5f7;
+  color: #000000;
+}
+
+.btn-accent {
+  background-color: #fa2d48;
+  color: #ffffff;
 }
 
 .kora-orb {
-  background: linear-gradient(135deg var(--in-oklch), #22d3ee, #6366f1 55%, #34d399);
-  box-shadow:
-    0 0 24px rgba(34, 211, 238, 0.4),
-    inset 0 2px 6px rgba(255, 255, 255, 0.55);
+  background: radial-gradient(circle at 32% 32%, #ffffff 0%, #d4d4d8 52%, #71717a 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+html.dark .kora-orb {
+  background: radial-gradient(circle at 32% 32%, #ffffff 0%, #a1a1aa 58%, #3f3f46 100%);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.14);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -121,17 +126,17 @@ html.light .kora-ambient-canvas::before {
   scrollbar-width: none;
 }
 
-@keyframes koraPulse {
+@keyframes koraBreath {
   0%, 100% {
     transform: scale(1);
-    opacity: 0.92;
+    opacity: 0.94;
   }
   50% {
-    transform: scale(1.06);
+    transform: scale(1.04);
     opacity: 1;
   }
 }
 
 .animate-kora-orb {
-  animation: koraPulse 4s ease-in-out infinite;
+  animation: koraBreath 5s ease-in-out infinite;
 }

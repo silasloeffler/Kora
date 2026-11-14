@@ -9,6 +9,7 @@ import { mergeActiveWorkoutRecovery } from '../services/storage';
 import { computeReadinessScore } from '../services/healthConnect';
 import { extractSuggestedPlan, isCronScheduleDueToday } from '../services/aiCoach';
 import { DEMO_SEED } from '../data/demoSeed';
+import { createExerciseFromCatalogItem, EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { isForbiddenPath } from '../../scripts/privacy-check.mjs';
 
 describe('Wall-Clock Rest Timer (Background-safe across YouTube switches)', () => {
@@ -117,18 +118,41 @@ describe('Health Connect Readiness & Proactive Cron Engine', () => {
   });
 });
 
+describe('Exercise Catalog (80+ structured exercises)', () => {
+  it('provides at least 80 unique exercises across all 6 muscle groups', () => {
+    expect(EXERCISE_CATALOG.length).toBeGreaterThanOrEqual(80);
+    const categories = new Set(EXERCISE_CATALOG.map((c) => c.category));
+    expect(categories).toEqual(new Set(['Beine', 'Rücken', 'Brust', 'Schultern', 'Arme', 'Core']));
+    const ids = new Set(EXERCISE_CATALOG.map((c) => c.id));
+    expect(ids.size).toBe(EXERCISE_CATALOG.length);
+  });
+
+  it('materializes an active Exercise with prefilled sets and optional gym note', () => {
+    const sample = EXERCISE_CATALOG[0];
+    const ex = createExerciseFromCatalogItem(sample, 'Giga Gym Berlin');
+    expect(ex.name).toBe(sample.name);
+    expect(ex.sets.length).toBe(sample.defaultSets);
+    expect(ex.sets.every((s) => !s.done)).toBe(true);
+    if (sample.defaultNote) {
+      expect(ex.gymSettings['Giga Gym Berlin']).toBe(sample.defaultNote);
+    }
+  });
+});
+
 describe('Privacy Guard (Personal Data Separation)', () => {
-  it('blocks personal data screenshots, local seeds, HTML prototypes, and env files', () => {
+  it('blocks personal data screenshots, local seeds, HTML prototypes, Kora.apk, and env files', () => {
     expect(isForbiddenPath('Data/Screenshot_20261114-112845.png')).toBe(true);
     expect(isForbiddenPath('personal-data/silas-seed.local.json')).toBe(true);
     expect(isForbiddenPath('public/personal-seed.local.json')).toBe(true);
     expect(isForbiddenPath('technogym_workout_logger.html')).toBe(true);
+    expect(isForbiddenPath('Kora.apk')).toBe(true);
     expect(isForbiddenPath('.env.local')).toBe(true);
   });
 
   it('allows public app source files and .env.example', () => {
     expect(isForbiddenPath('src/App.tsx')).toBe(false);
     expect(isForbiddenPath('src/data/demoSeed.ts')).toBe(false);
+    expect(isForbiddenPath('src/data/exerciseCatalog.ts')).toBe(false);
     expect(isForbiddenPath('.env.example')).toBe(false);
   });
 });

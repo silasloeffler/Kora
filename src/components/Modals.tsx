@@ -7,7 +7,9 @@ import {
   KeyRound,
   Pause,
   Play,
+  Plus,
   RotateCcw,
+  Search,
   Sparkles,
   Upload,
   X
@@ -15,6 +17,11 @@ import {
 import { AppSettings, Exercise, ExercisePattern, MuscleCategory } from '../types/kora';
 import { formatSecondsClock } from '../services/timer';
 import { ExerciseIllustration } from './ExerciseIllustration';
+import {
+  createExerciseFromCatalogItem,
+  EXERCISE_CATALOG,
+  ExerciseCatalogItem
+} from '../data/exerciseCatalog';
 
 interface TimerModalProps {
   isOpen: boolean;
@@ -48,7 +55,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -65,32 +72,32 @@ export const TimerModal: React.FC<TimerModalProps> = ({
         </button>
 
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest opacity-60">Wall-Clock Rest Timer</p>
-          <p className="text-[11px] opacity-50 mt-0.5">Läuft auch bei YouTube-Wechsel exakt weiter</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest kora-muted">Satzpause</p>
+          <p className="text-[11px] kora-muted mt-0.5">Läuft im Hintergrund exakt weiter</p>
         </div>
 
         <div className="relative w-44 h-44 mx-auto flex items-center justify-center">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r={radius} stroke="currentColor" strokeWidth="8" className="opacity-15" fill="none" />
+            <circle cx="80" cy="80" r={radius} stroke="currentColor" strokeWidth="6" className="opacity-15" fill="none" />
             <circle
               cx="80"
               cy="80"
               r={radius}
-              stroke="currentColor"
-              strokeWidth="8"
+              stroke="#fa2d48"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
-              className="text-cyan-400 transition-all duration-300"
+              className="transition-all duration-300"
               fill="none"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-mono font-bold tracking-tight">
+            <span className="text-4xl font-mono font-semibold tracking-tight">
               {formatSecondsClock(remainingSeconds)}
             </span>
-            <span className="text-[10px] uppercase tracking-widest opacity-60 mt-1">
-              {remainingSeconds === 0 ? 'Zeit um!' : isRunning ? 'Läuft...' : 'Bereit'}
+            <span className="text-[10px] uppercase tracking-widest kora-muted mt-1">
+              {remainingSeconds === 0 ? 'Zeit um' : isRunning ? 'Läuft' : 'Bereit'}
             </span>
           </div>
         </div>
@@ -101,10 +108,8 @@ export const TimerModal: React.FC<TimerModalProps> = ({
               key={sec}
               type="button"
               onClick={() => onSelectDuration(sec)}
-              className={`py-2 rounded-xl font-semibold transition cursor-pointer ${
-                totalSeconds === sec
-                  ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/40'
-                  : 'liquid-pill opacity-80 hover:opacity-100'
+              className={`py-2 rounded-xl font-medium transition cursor-pointer ${
+                totalSeconds === sec ? 'btn-primary' : 'liquid-pill kora-muted'
               }`}
             >
               {sec}s
@@ -116,14 +121,14 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(-15)}
-            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-bold cursor-pointer"
+            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-semibold cursor-pointer"
           >
             -15s
           </button>
           <button
             type="button"
             onClick={onToggle}
-            className="flex-1 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/25 cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl btn-primary font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
           >
             {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             <span>{isRunning ? 'Pause' : 'Start'}</span>
@@ -131,7 +136,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(15)}
-            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-bold cursor-pointer"
+            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-semibold cursor-pointer"
           >
             +15s
           </button>
@@ -152,6 +157,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 interface AddExerciseModalProps {
   isOpen: boolean;
   activeGym: string;
+  existingExerciseNames: string[];
   onClose: () => void;
   onSave: (exercise: Exercise) => void;
 }
@@ -171,22 +177,55 @@ const PATTERNS: Array<{ id: ExercisePattern; label: string }> = [
   { id: 'core_crunch', label: 'Core' }
 ];
 
+const CATALOG_CATEGORIES: Array<'Alle' | MuscleCategory> = [
+  'Alle',
+  'Brust',
+  'Rücken',
+  'Beine',
+  'Schultern',
+  'Arme',
+  'Core'
+];
+
 export const AddExerciseModal: React.FC<AddExerciseModalProps> = ({
   isOpen,
   activeGym,
+  existingExerciseNames,
   onClose,
   onSave
 }) => {
+  const [mode, setMode] = useState<'catalog' | 'custom'>('catalog');
+  const [search, setSearch] = useState('');
+  const [catFilter, setCatFilter] = useState<'Alle' | MuscleCategory>('Alle');
+  const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
+
+  // Custom form state
   const [name, setName] = useState('');
   const [category, setCategory] = useState<MuscleCategory>('Rücken');
   const [pattern, setPattern] = useState<ExercisePattern>('seated_row');
   const [targetWeight, setTargetWeight] = useState('50');
   const [topWeight, setTopWeight] = useState('');
-  const [pinNote, setPinNote] = useState('');
+  const [note, setNote] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const existingNormalized = new Set(existingExerciseNames.map((n) => n.toLowerCase()));
+
+  const filteredCatalog = EXERCISE_CATALOG.filter((item) => {
+    if (catFilter !== 'Alle' && item.category !== catFilter) return false;
+    if (!search.trim()) return true;
+    return `${item.name} ${item.category} ${item.equipment} ${item.primaryMuscle}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
+  });
+
+  const handleAddFromCatalog = (item: ExerciseCatalogItem) => {
+    const newEx = createExerciseFromCatalogItem(item, activeGym);
+    onSave(newEx);
+    setAddedIds((prev) => ({ ...prev, [item.id]: true }));
+  };
+
+  const handleSubmitCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     const baseWeight = Number(targetWeight.split('-')[0]) || 40;
@@ -198,7 +237,7 @@ export const AddExerciseModal: React.FC<AddExerciseModalProps> = ({
       primaryMuscle: category,
       targetWeight: targetWeight.trim() || String(baseWeight),
       topWeight: topWeight ? Number(topWeight) : null,
-      gymSettings: pinNote.trim() ? { [activeGym]: pinNote.trim() } : {},
+      gymSettings: note.trim() ? { [activeGym]: note.trim() } : {},
       defaultRestSeconds: 90,
       sets: [
         { id: `s_${Date.now()}_1`, weight: baseWeight, reps: 10, done: false },
@@ -208,124 +247,213 @@ export const AddExerciseModal: React.FC<AddExerciseModalProps> = ({
     };
     onSave(newEx);
     setName('');
-    setPinNote('');
+    setNote('');
     onClose();
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <form
-        onSubmit={handleSubmit}
+      <div
         onClick={(e) => e.stopPropagation()}
-        className="liquid-glass-elevated rounded-3xl p-5 w-full max-w-sm space-y-3.5 max-h-[88vh] overflow-y-auto"
+        className="liquid-glass-elevated rounded-3xl p-5 w-full max-w-md space-y-3.5 max-h-[88vh] flex flex-col"
       >
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold">Neue Übung anlegen</h3>
+        <div className="flex items-center justify-between shrink-0">
+          <div>
+            <h3 className="text-base font-semibold tracking-tight">Übung hinzufügen</h3>
+            <p className="text-[11px] kora-muted">{EXERCISE_CATALOG.length} Übungen im Katalog</p>
+          </div>
           <button type="button" onClick={onClose} className="liquid-pill w-8 h-8 rounded-full flex items-center justify-center cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-black/15 dark:bg-white/5 border border-white/10">
-          <ExerciseIllustration pattern={pattern} className="w-16 h-12 shrink-0" />
-          <div className="text-xs opacity-80">
-            <p className="font-semibold">S/W Vektor-Vorschau</p>
-            <p className="text-[11px] opacity-70">Minimalistische Visualisierung passt sich Dark &amp; Light Mode an.</p>
-          </div>
+        {/* Mode Tabs */}
+        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full liquid-pill shrink-0">
+          <button
+            type="button"
+            onClick={() => setMode('catalog')}
+            className={`py-1.5 rounded-full text-xs font-semibold cursor-pointer transition ${
+              mode === 'catalog' ? 'btn-primary' : 'kora-muted'
+            }`}
+          >
+            Übungskatalog ({EXERCISE_CATALOG.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('custom')}
+            className={`py-1.5 rounded-full text-xs font-semibold cursor-pointer transition ${
+              mode === 'custom' ? 'btn-primary' : 'kora-muted'
+            }`}
+          >
+            Eigene Übung
+          </button>
         </div>
 
-        <div className="space-y-2.5 text-xs">
-          <div>
-            <label className="block opacity-70 font-semibold mb-1">Übungsname / Gerät</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="z. B. TechnoGym Chest Incline"
-              className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block opacity-70 font-semibold mb-1">Muskelgruppe</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as MuscleCategory)}
-                className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none bg-transparent"
-              >
-                {(['Beine', 'Rücken', 'Brust', 'Schultern', 'Arme', 'Core'] as MuscleCategory[]).map((cat) => (
-                  <option key={cat} value={cat} className="bg-slate-900 text-white">
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block opacity-70 font-semibold mb-1">S/W Grafik</label>
-              <select
-                value={pattern}
-                onChange={(e) => setPattern(e.target.value as ExercisePattern)}
-                className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none bg-transparent"
-              >
-                {PATTERNS.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-slate-900 text-white">
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block opacity-70 font-semibold mb-1">Start-Ziel (kg)</label>
+        {mode === 'catalog' ? (
+          <>
+            <div className="liquid-pill rounded-2xl px-3 py-2 flex items-center gap-2 shrink-0">
+              <Search className="w-3.5 h-3.5 kora-muted" />
               <input
                 type="text"
-                value={targetWeight}
-                onChange={(e) => setTargetWeight(e.target.value)}
-                placeholder="z. B. 50-60"
-                className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Übung, Muskel oder Gerät suchen (z. B. Kabelzug, Ringe)..."
+                className="flex-1 bg-transparent text-xs focus:outline-none"
               />
             </div>
-            <div>
-              <label className="block opacity-70 font-semibold mb-1">Früherer Peak (kg)</label>
-              <input
-                type="number"
-                step="0.5"
-                value={topWeight}
-                onChange={(e) => setTopWeight(e.target.value)}
-                placeholder="z. B. 90"
-                className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
-              />
+
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+              {CATALOG_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCatFilter(cat)}
+                  className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-medium cursor-pointer ${
+                    catFilter === cat ? 'btn-primary' : 'liquid-pill kora-muted'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
-          </div>
 
-          <div>
-            <label className="block opacity-70 font-semibold mb-1">Geräte-Pin für {activeGym}</label>
-            <input
-              type="text"
-              value={pinNote}
-              onChange={(e) => setPinNote(e.target.value)}
-              placeholder="z. B. Sitz Stufe 4, Brustpolster 2"
-              className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
-            />
-          </div>
-        </div>
+            <div className="flex-1 overflow-y-auto divide-y kora-hairline-divider pr-0.5">
+              {filteredCatalog.map((item) => {
+                const alreadyInPlan =
+                  existingNormalized.has(item.name.toLowerCase()) || addedIds[item.id];
+                return (
+                  <div key={item.id} className="py-2.5 flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <ExerciseIllustration pattern={item.pattern} className="w-11 h-9 shrink-0 opacity-85" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate">{item.name}</p>
+                        <p className="text-[11px] kora-muted truncate">
+                          {item.category} • {item.equipment} • {item.primaryMuscle}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAddFromCatalog(item)}
+                      className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 cursor-pointer ${
+                        alreadyInPlan ? 'liquid-pill kora-muted' : 'btn-primary'
+                      }`}
+                    >
+                      {alreadyInPlan ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                      <span>{alreadyInPlan ? 'Hinzugefügt' : 'Plan'}</span>
+                    </button>
+                  </div>
+                );
+              })}
+              {filteredCatalog.length === 0 && (
+                <p className="py-8 text-center text-xs kora-muted">Keine passende Übung gefunden.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <form onSubmit={handleSubmitCustom} className="space-y-3 overflow-y-auto">
+            <div className="flex items-center gap-3 p-3 rounded-2xl liquid-pill">
+              <ExerciseIllustration pattern={pattern} className="w-16 h-12 shrink-0" />
+              <div className="text-xs">
+                <p className="font-semibold">S/W Vektor-Vorschau</p>
+                <p className="text-[11px] kora-muted">Minimalistische Darstellung im Dark &amp; Light Mode.</p>
+              </div>
+            </div>
 
-        <div className="flex gap-2 pt-2">
-          <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl liquid-pill text-xs font-semibold cursor-pointer">
-            Abbrechen
-          </button>
-          <button type="submit" className="flex-1 py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/25 cursor-pointer">
-            Speichern
-          </button>
-        </div>
-      </form>
+            <div className="space-y-2.5 text-xs">
+              <div>
+                <label className="block kora-muted font-medium mb-1">Übungsname / Gerät</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="z. B. TechnoGym Chest Incline"
+                  className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block kora-muted font-medium mb-1">Muskelgruppe</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as MuscleCategory)}
+                    className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none bg-transparent"
+                  >
+                    {(['Beine', 'Rücken', 'Brust', 'Schultern', 'Arme', 'Core'] as MuscleCategory[]).map((cat) => (
+                      <option key={cat} value={cat} className="bg-neutral-900 text-white">
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block kora-muted font-medium mb-1">S/W Grafik</label>
+                  <select
+                    value={pattern}
+                    onChange={(e) => setPattern(e.target.value as ExercisePattern)}
+                    className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none bg-transparent"
+                  >
+                    {PATTERNS.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-neutral-900 text-white">
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block kora-muted font-medium mb-1">Start-Ziel (kg)</label>
+                  <input
+                    type="text"
+                    value={targetWeight}
+                    onChange={(e) => setTargetWeight(e.target.value)}
+                    placeholder="z. B. 50-60"
+                    className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block kora-muted font-medium mb-1">Früherer Peak (kg)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={topWeight}
+                    onChange={(e) => setTopWeight(e.target.value)}
+                    placeholder="z. B. 90"
+                    className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block kora-muted font-medium mb-1">Sitzeinstellung / Notiz ({activeGym})</label>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="z. B. Sitz Stufe 4, Brustpolster 2"
+                  className="w-full liquid-pill rounded-xl px-3 py-2.5 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl liquid-pill text-xs font-semibold cursor-pointer">
+                Abbrechen
+              </button>
+              <button type="submit" className="flex-1 py-2.5 rounded-xl btn-primary font-semibold text-xs cursor-pointer">
+                Speichern
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 };
@@ -372,7 +500,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -381,8 +509,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold">Kora Kern &amp; Daten</h3>
-            <p className="text-[11px] opacity-65">Offline-First IndexedDB • Strikte Datenschutz-Trennung</p>
+            <h3 className="text-base font-semibold tracking-tight">Kora Kern &amp; Daten</h3>
+            <p className="text-[11px] kora-muted">Offline-First IndexedDB • Strikte Datenschutz-Trennung</p>
           </div>
           <button
             type="button"
@@ -394,26 +522,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Gemini API Key Section */}
-        <div className="p-3.5 rounded-2xl bg-black/15 dark:bg-white/5 border border-white/10 space-y-2.5 text-xs">
+        <div className="p-3.5 rounded-2xl liquid-pill space-y-2.5 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-              Gemini KI-Coach Key (nur lokal gespeichert)
+            <span className="font-semibold flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5" />
+              Gemini KI-Coach Key (nur lokal)
             </span>
-            <span className="text-[10px] opacity-60">{settings.geminiModel}</span>
+            <span className="text-[10px] kora-muted">{settings.geminiModel}</span>
           </div>
           <div className="flex gap-2">
             <input
               type="password"
               value={apiKeyDraft}
               onChange={(e) => setApiKeyDraft(e.target.value)}
-              placeholder="AIza... (optional, sonst lokaler Smart-Coach)"
+              placeholder="AIza... (optional)"
               className="flex-1 liquid-pill rounded-xl px-3 py-2 text-xs focus:outline-none"
             />
             <button
               type="button"
               onClick={handleSaveKey}
-              className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs cursor-pointer flex items-center gap-1"
+              className="px-3 py-2 rounded-xl btn-primary font-semibold text-xs cursor-pointer flex items-center gap-1"
             >
               {savedKeyTick ? <Check className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
               <span>{savedKeyTick ? 'Gespeichert' : 'Save'}</span>
@@ -422,11 +550,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Gyms */}
-        <div className="p-3.5 rounded-2xl bg-black/15 dark:bg-white/5 border border-white/10 space-y-2.5 text-xs">
-          <p className="font-bold">Deine Fitnessstudios (pro Studio eigene Pin-Notizen)</p>
+        <div className="p-3.5 rounded-2xl liquid-pill space-y-2.5 text-xs">
+          <p className="font-semibold">Studios</p>
           <div className="flex flex-wrap gap-1.5">
             {settings.gyms.map((g) => (
-              <span key={g} className="liquid-pill px-2.5 py-1 rounded-full text-[11px] font-medium">
+              <span key={g} className="liquid-pill px-2.5 py-1 rounded-full text-[11px]">
                 {g}
               </span>
             ))}
@@ -442,34 +570,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <button
               type="button"
               onClick={handleAddGym}
-              className="liquid-pill px-3 py-2 rounded-xl text-xs font-bold cursor-pointer"
+              className="liquid-pill px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer"
             >
               + Add
             </button>
           </div>
         </div>
 
-        {/* Health Connect & Profile Switch */}
-        <div className="p-3.5 rounded-2xl bg-black/15 dark:bg-white/5 border border-white/10 space-y-2.5 text-xs">
+        {/* Health Connect */}
+        <div className="p-3.5 rounded-2xl liquid-pill space-y-2 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-semibold flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-[#fa2d48]" />
               Google Health Connect Bridge
             </span>
             <button
               type="button"
               onClick={() => onUpdateSettings({ healthConnectConnected: !settings.healthConnectConnected })}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-bold cursor-pointer ${
-                settings.healthConnectConnected
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                  : 'liquid-pill'
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer ${
+                settings.healthConnectConnected ? 'btn-primary' : 'liquid-pill'
               }`}
             >
               {settings.healthConnectConnected ? 'Aktiv' : 'Pausiert'}
             </button>
           </div>
-          <p className="text-[11px] opacity-65 leading-relaxed">
-            In der Capacitor Android APK verbindet sich Kora direkt mit Android Health Connect (Schlaf, HRV, Ruhepuls, Schritte). Im Browser steht dir die adaptive Live-Telemetrie zur Verfügung.
+          <p className="text-[11px] kora-muted leading-relaxed">
+            Bereit für native Android Health Connect Sync (Schlaf, HRV, Ruhepuls, Schritte) und adaptive Web-Telemetrie.
           </p>
         </div>
 
@@ -480,12 +606,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={onExportBackup}
             className="w-full liquid-pill py-2.5 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Download className="w-4 h-4 text-cyan-400" />
+            <Download className="w-4 h-4" />
             <span>Vollständiges JSON-Backup exportieren</span>
           </button>
 
           <label className="w-full liquid-pill py-2.5 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer">
-            <Upload className="w-4 h-4 text-indigo-400" />
+            <Upload className="w-4 h-4" />
             <span>JSON-Backup wiederherstellen</span>
             <input
               type="file"
@@ -503,7 +629,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => onSwitchSeed('personal')}
-                className="py-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-400/25 font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2 px-3 rounded-xl btn-primary font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Database className="w-3.5 h-3.5" />
                 <span>Silas Seed laden</span>

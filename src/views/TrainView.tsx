@@ -7,10 +7,10 @@ import {
   Minus,
   Pencil,
   Plus,
+  SlidersHorizontal,
   Sparkles,
   Timer,
-  Trash2,
-  Wrench
+  Trash2
 } from 'lucide-react';
 import { ActiveWorkoutState, Exercise, MuscleCategory, WorkoutPlan } from '../types/kora';
 import { ExerciseIllustration } from '../components/ExerciseIllustration';
@@ -66,8 +66,8 @@ export const TrainView: React.FC<TrainViewProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'done'>('all');
   const [categoryFilter, setCategoryFilter] = useState<'Alle' | MuscleCategory>('Alle');
-  const [editingPinId, setEditingPinId] = useState<string | null>(null);
-  const [pinDraft, setPinDraft] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const activePlan = plans.find((p) => p.id === activeWorkout.activePlanId) ?? plans[0];
@@ -89,7 +89,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
   );
   const totalSetsCount = planExercises.reduce((acc, ex) => acc + ex.sets.length, 0);
 
-  // 0-Click Recovery Auto-Scroll to last focused exercise
+  // Seamless recovery scroll to last focused exercise
   useEffect(() => {
     const focusId = activeWorkout.focusedExerciseId;
     if (!focusId) return;
@@ -102,11 +102,11 @@ export const TrainView: React.FC<TrainViewProps> = ({
   }, [activeWorkout.focusedExerciseId]);
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-4">
       {recoveredBannerVisible && (
-        <div className="liquid-pill rounded-2xl px-3.5 py-2 text-xs font-semibold text-emerald-400 flex items-center justify-between border-emerald-400/30">
-          <span>Session nahtlos aus Hintergrund wiederhergestellt</span>
-          <Check className="w-4 h-4" />
+        <div className="liquid-pill rounded-2xl px-4 py-2.5 text-xs font-medium flex items-center justify-between">
+          <span>Session aus dem Hintergrund wiederhergestellt</span>
+          <Check className="w-4 h-4 text-[#fa2d48]" />
         </div>
       )}
 
@@ -119,16 +119,16 @@ export const TrainView: React.FC<TrainViewProps> = ({
               key={plan.id}
               type="button"
               onClick={() => onSelectPlan(plan.id)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                selected
-                  ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
-                  : 'liquid-pill opacity-80 hover:opacity-100'
+              className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                selected ? 'btn-primary' : 'liquid-pill kora-muted hover:opacity-100'
               }`}
             >
               <span>{plan.name}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                  selected ? 'bg-slate-950/15 text-slate-950' : 'bg-white/10 opacity-75'
+                className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums ${
+                  selected
+                    ? 'bg-white/20 dark:bg-black/15'
+                    : 'bg-black/[0.06] dark:bg-white/[0.08]'
                 }`}
               >
                 {plan.exerciseIds.length}
@@ -140,19 +140,19 @@ export const TrainView: React.FC<TrainViewProps> = ({
         <button
           type="button"
           onClick={onAskAiPlanAdapter}
-          className="shrink-0 liquid-pill rounded-full px-3 py-2 text-xs font-semibold text-cyan-400 flex items-center gap-1 cursor-pointer"
+          className="shrink-0 liquid-pill rounded-full px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
         >
-          <Sparkles className="w-3.5 h-3.5" />
+          <Sparkles className="w-3.5 h-3.5 text-[#fa2d48]" />
           <span>KI-Plan</span>
         </button>
       </div>
 
-      {/* Workout Action & Progress Bar */}
-      <div className="liquid-glass rounded-3xl p-3.5 space-y-3">
+      {/* Workout Action & Filter Surface */}
+      <div className="liquid-glass rounded-[24px] p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[11px] opacity-60 truncate">{activePlan?.subtitle}</p>
-            <p className="text-xs font-bold mt-0.5">
+            <p className="text-[11px] kora-muted truncate">{activePlan?.subtitle}</p>
+            <p className="text-[13px] font-semibold mt-0.5 tabular-nums">
               {completedSetsCount} / {totalSetsCount} Sätze • {activeWorkout.gym}
             </p>
           </div>
@@ -160,16 +160,16 @@ export const TrainView: React.FC<TrainViewProps> = ({
             <button
               type="button"
               onClick={onOpenAddExercise}
-              className="liquid-pill px-3 py-2 rounded-full text-xs font-bold flex items-center gap-1 cursor-pointer"
+              className="liquid-pill px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-85 transition"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Übung</span>
+              <span>Katalog</span>
             </button>
             {activeWorkout.isWorkoutActive ? (
               <button
                 type="button"
                 onClick={onFinishWorkout}
-                className="px-3.5 py-2 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 cursor-pointer"
+                className="btn-accent px-3.5 py-2 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition"
               >
                 <Flag className="w-3.5 h-3.5" />
                 <span>Abschließen</span>
@@ -178,38 +178,36 @@ export const TrainView: React.FC<TrainViewProps> = ({
               <button
                 type="button"
                 onClick={onStartWorkout}
-                className="px-3.5 py-2 rounded-full bg-cyan-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/25 cursor-pointer"
+                className="btn-primary px-3.5 py-2 rounded-full font-semibold text-xs cursor-pointer hover:opacity-90 transition"
               >
-                Session starten
+                Starten
               </button>
             )}
           </div>
         </div>
 
         {/* Status + Category Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 border-t kora-hairline-divider">
           {(['all', 'open', 'done'] as const).map((st) => (
             <button
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer ${
-                statusFilter === st
-                  ? 'bg-white text-slate-950 dark:bg-white dark:text-slate-950'
-                  : 'liquid-pill opacity-70'
+              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition ${
+                statusFilter === st ? 'btn-primary' : 'liquid-pill kora-muted'
               }`}
             >
               {st === 'all' ? 'Alle' : st === 'open' ? 'Offen' : 'Erledigt'}
             </button>
           ))}
-          <span className="opacity-30 px-1">|</span>
+          <span className="kora-muted opacity-40 px-1">|</span>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setCategoryFilter(cat)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium cursor-pointer ${
-                categoryFilter === cat ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/35' : 'liquid-pill opacity-65'
+              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium cursor-pointer transition ${
+                categoryFilter === cat ? 'btn-accent' : 'liquid-pill kora-muted'
               }`}
             >
               {cat}
@@ -219,7 +217,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
       </div>
 
       {/* Exercise Cards */}
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {filteredExercises.map((ex) => {
           const isFocused = activeWorkout.focusedExerciseId === ex.id;
           const doneCount = ex.sets.filter((s) => s.done).length;
@@ -232,9 +230,9 @@ export const TrainView: React.FC<TrainViewProps> = ({
               ref={(el) => {
                 cardRefs.current[ex.id] = el;
               }}
-              className={`liquid-glass rounded-3xl p-4 space-y-3 transition-all ${
-                isFocused ? 'ring-1 ring-cyan-400/55' : ''
-              } ${allDone ? 'opacity-80' : ''}`}
+              className={`liquid-glass rounded-[24px] p-4 space-y-3 transition-all ${
+                isFocused ? 'ring-1 ring-[#fa2d48]/45' : ''
+              } ${allDone ? 'opacity-75' : ''}`}
             >
               {/* Header Row */}
               <div
@@ -242,25 +240,25 @@ export const TrainView: React.FC<TrainViewProps> = ({
                 className="flex items-start justify-between gap-3 cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-16 h-14 rounded-2xl bg-black/10 dark:bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0 p-1">
+                  <div className="w-16 h-14 rounded-2xl bg-black/[0.04] dark:bg-white/[0.05] flex items-center justify-center shrink-0 p-1.5">
                     <ExerciseIllustration pattern={ex.pattern} className="w-full h-full" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <h3 className="text-sm font-bold leading-snug">{ex.name}</h3>
-                    </div>
-                    <p className="text-[11px] opacity-60 mt-0.5">
+                    <h3 className="text-[15px] font-semibold leading-snug tracking-tight">
+                      {ex.name}
+                    </h3>
+                    <p className="text-[11px] kora-muted mt-0.5 tabular-nums">
                       {ex.category} • {doneCount}/{ex.sets.length} Sätze
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      {ex.targetWeight && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-400/25">
-                          Ziel: {ex.targetWeight} kg
+                      {ex.targetWeight !== undefined && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/[0.06] dark:bg-white/[0.09] tabular-nums">
+                          Ziel {ex.targetWeight} kg
                         </span>
                       )}
-                      {ex.topWeight && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 opacity-75">
-                          Peak: {ex.topWeight} kg
+                      {ex.topWeight !== undefined && (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full kora-muted bg-black/[0.03] dark:bg-white/[0.05] tabular-nums">
+                          Peak {ex.topWeight} kg
                         </span>
                       )}
                     </div>
@@ -277,7 +275,11 @@ export const TrainView: React.FC<TrainViewProps> = ({
                     aria-label="Details umschalten"
                     className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center cursor-pointer"
                   >
-                    {isFocused ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    {isFocused ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
                   </button>
                   <button
                     type="button"
@@ -286,77 +288,79 @@ export const TrainView: React.FC<TrainViewProps> = ({
                       onRemoveExerciseFromPlan(ex.id);
                     }}
                     aria-label="Aus Plan entfernen"
-                    className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center opacity-60 hover:text-rose-400 hover:opacity-100 cursor-pointer"
+                    className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center kora-muted hover:text-[#fa2d48] cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
-              {/* Gym-specific Machine Pin / Seat Note */}
-              <div className="rounded-2xl bg-black/10 dark:bg-black/25 border border-white/10 px-3 py-2 text-[11px]">
-                {editingPinId === ex.id ? (
+              {/* Optional Seat / Gym Note */}
+              <div className="rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2 text-[11px]">
+                {editingNoteId === ex.id ? (
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      value={pinDraft}
-                      onChange={(e) => setPinDraft(e.target.value)}
-                      placeholder={`Einstellung für ${activeWorkout.gym}...`}
+                      value={noteDraft}
+                      onChange={(e) => setNoteDraft(e.target.value)}
+                      placeholder={`Sitzeinstellung / Notiz für ${activeWorkout.gym}...`}
                       className="flex-1 bg-transparent focus:outline-none text-xs"
                       autoFocus
                     />
                     <button
                       type="button"
                       onClick={() => {
-                        onUpdatePinNote(ex.id, activeWorkout.gym, pinDraft);
-                        setEditingPinId(null);
+                        onUpdatePinNote(ex.id, activeWorkout.gym, noteDraft);
+                        setEditingNoteId(null);
                       }}
-                      className="px-2.5 py-1 rounded-full bg-cyan-500 text-slate-950 font-bold text-[10px] cursor-pointer"
+                      className="btn-primary px-2.5 py-1 rounded-full font-semibold text-[10px] cursor-pointer"
                     >
-                      Save
+                      Sichern
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate opacity-80 flex items-center gap-1.5">
-                      <Wrench className="w-3 h-3 text-amber-400 shrink-0" />
-                      <span>{gymNote || `Noch kein Pin für ${activeWorkout.gym}`}</span>
+                    <span className="truncate kora-muted flex items-center gap-1.5">
+                      <SlidersHorizontal className="w-3 h-3 shrink-0" />
+                      <span>
+                        {gymNote || `Optional: Sitz- & Gerätenotiz (${activeWorkout.gym})`}
+                      </span>
                     </span>
                     <button
                       type="button"
                       onClick={() => {
-                        setEditingPinId(ex.id);
-                        setPinDraft(ex.gymSettings[activeWorkout.gym] || '');
+                        setEditingNoteId(ex.id);
+                        setNoteDraft(ex.gymSettings[activeWorkout.gym] || '');
                       }}
-                      className="text-amber-400 font-semibold flex items-center gap-1 shrink-0 cursor-pointer"
+                      className="font-semibold flex items-center gap-1 shrink-0 cursor-pointer hover:text-[#fa2d48] transition"
                     >
                       <Pencil className="w-3 h-3" />
-                      <span>Pin</span>
+                      <span>Notiz</span>
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Set Rows — Always accessible for fast 1-handed logging */}
-              <div className="space-y-1.5">
+              {/* Clean Borderless Set Rows with Subtle Hairline Dividers */}
+              <div className="rounded-2xl overflow-hidden divide-y kora-hairline-divider bg-black/[0.025] dark:bg-white/[0.03]">
                 {ex.sets.map((st, idx) => (
                   <div
                     key={st.id}
-                    className={`rounded-2xl px-2.5 py-2 border flex items-center justify-between gap-1.5 transition ${
-                      st.done
-                        ? 'bg-emerald-500/15 border-emerald-400/30'
-                        : 'bg-black/10 dark:bg-white/[0.04] border-white/10'
+                    className={`px-3 py-2 flex items-center justify-between gap-1.5 transition ${
+                      st.done ? 'bg-black/[0.04] dark:bg-white/[0.06]' : ''
                     }`}
                   >
-                    {/* Set # + delete */}
-                    <div className="flex items-center gap-1 w-9 shrink-0">
-                      <span className="text-xs font-bold opacity-75">{idx + 1}</span>
+                    {/* Set Number + Remove */}
+                    <div className="flex items-center gap-1 w-8 shrink-0">
+                      <span className="text-xs font-semibold kora-muted tabular-nums">
+                        {idx + 1}
+                      </span>
                       {ex.sets.length > 1 && (
                         <button
                           type="button"
                           onClick={() => onDeleteSet(ex.id, st.id)}
                           aria-label="Satz löschen"
-                          className="opacity-35 hover:opacity-100 hover:text-rose-400 cursor-pointer"
+                          className="kora-muted opacity-45 hover:opacity-100 hover:text-[#fa2d48] cursor-pointer"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -367,7 +371,9 @@ export const TrainView: React.FC<TrainViewProps> = ({
                     <div className="flex items-center gap-1 flex-1 justify-center">
                       <button
                         type="button"
-                        onClick={() => onUpdateSet(ex.id, st.id, 'weight', Math.max(0, st.weight - 2.5))}
+                        onClick={() =>
+                          onUpdateSet(ex.id, st.id, 'weight', Math.max(0, st.weight - 2.5))
+                        }
                         aria-label="Gewicht verringern"
                         className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center active:scale-90 cursor-pointer"
                       >
@@ -377,10 +383,12 @@ export const TrainView: React.FC<TrainViewProps> = ({
                         type="number"
                         step="0.5"
                         value={st.weight}
-                        onChange={(e) => onUpdateSet(ex.id, st.id, 'weight', Number(e.target.value) || 0)}
-                        className="w-12 text-center bg-transparent font-mono text-xs font-bold focus:outline-none"
+                        onChange={(e) =>
+                          onUpdateSet(ex.id, st.id, 'weight', Number(e.target.value) || 0)
+                        }
+                        className="w-12 text-center bg-transparent font-mono text-xs font-semibold tabular-nums focus:outline-none"
                       />
-                      <span className="text-[10px] opacity-50 -ml-1 mr-0.5">kg</span>
+                      <span className="text-[10px] kora-muted -ml-1 mr-0.5">kg</span>
                       <button
                         type="button"
                         onClick={() => onUpdateSet(ex.id, st.id, 'weight', st.weight + 2.5)}
@@ -404,10 +412,12 @@ export const TrainView: React.FC<TrainViewProps> = ({
                       <input
                         type="number"
                         value={st.reps}
-                        onChange={(e) => onUpdateSet(ex.id, st.id, 'reps', Number(e.target.value) || 0)}
-                        className="w-8 text-center bg-transparent font-mono text-xs font-bold focus:outline-none"
+                        onChange={(e) =>
+                          onUpdateSet(ex.id, st.id, 'reps', Number(e.target.value) || 0)
+                        }
+                        className="w-8 text-center bg-transparent font-mono text-xs font-semibold tabular-nums focus:outline-none"
                       />
-                      <span className="text-[10px] opacity-50 -ml-1">x</span>
+                      <span className="text-[10px] kora-muted -ml-1">x</span>
                       <button
                         type="button"
                         onClick={() => onUpdateSet(ex.id, st.id, 'reps', st.reps + 1)}
@@ -424,9 +434,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
                       onClick={() => onToggleSetDone(ex.id, st.id)}
                       aria-label={st.done ? 'Satz als offen markieren' : 'Satz abschließen'}
                       className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer shrink-0 ${
-                        st.done
-                          ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30'
-                          : 'liquid-pill opacity-75 hover:opacity-100'
+                        st.done ? 'btn-accent' : 'liquid-pill kora-muted hover:opacity-100'
                       }`}
                     >
                       <Check className="w-4 h-4" />
@@ -440,7 +448,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onAddSet(ex.id)}
-                  className="text-cyan-400 font-semibold flex items-center gap-1 py-1 cursor-pointer"
+                  className="font-semibold flex items-center gap-1 py-1 cursor-pointer hover:text-[#fa2d48] transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Satz hinzufügen</span>
@@ -448,9 +456,9 @@ export const TrainView: React.FC<TrainViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onStartRestTimer(ex.defaultRestSeconds)}
-                  className="opacity-70 hover:opacity-100 flex items-center gap-1 py-1 cursor-pointer"
+                  className="kora-muted hover:opacity-100 flex items-center gap-1 py-1 cursor-pointer tabular-nums transition"
                 >
-                  <Timer className="w-3.5 h-3.5 text-amber-400" />
+                  <Timer className="w-3.5 h-3.5" />
                   <span>{ex.defaultRestSeconds}s Pause</span>
                 </button>
               </div>
@@ -459,8 +467,15 @@ export const TrainView: React.FC<TrainViewProps> = ({
         })}
 
         {filteredExercises.length === 0 && (
-          <div className="liquid-glass rounded-3xl p-8 text-center text-xs opacity-65">
-            Keine Übungen für diesen Filter gefunden.
+          <div className="liquid-glass rounded-[24px] p-8 text-center space-y-2">
+            <p className="text-xs kora-muted">Keine Übungen für diesen Filter gefunden.</p>
+            <button
+              type="button"
+              onClick={onOpenAddExercise}
+              className="btn-primary px-4 py-2 rounded-full text-xs font-semibold cursor-pointer"
+            >
+              Übung aus Katalog wählen
+            </button>
           </div>
         )}
       </div>

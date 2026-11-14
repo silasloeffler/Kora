@@ -10,7 +10,7 @@ const config: CapacitorConfig = {
   plugins: {
     LocalNotifications: {
       smallIcon: 'ic_stat_kora',
-      iconColor: '#22d3ee'
+      iconColor: '#fa2d48'
     }
   }
 };

@@ -66,16 +66,15 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
     label: string,
     value: number,
     onChange: (val: number) => void,
-    icon: React.ReactNode,
-    accentClass: string
+    icon: React.ReactNode
   ) => (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold flex items-center gap-1.5">
+        <span className="font-medium flex items-center gap-1.5">
           {icon}
           <span>{label}</span>
         </span>
-        <span className={`font-mono font-bold ${accentClass}`}>{value}/10</span>
+        <span className="font-mono font-semibold tabular-nums">{value}/10</span>
       </div>
       <input
         type="range"
@@ -83,52 +82,50 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
         max={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-cyan-400 cursor-pointer"
+        className="w-full accent-[#fa2d48] cursor-pointer"
       />
     </div>
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="px-1">
-        <p className="text-xs opacity-60 font-medium">Mental Health &amp; Nervensystem</p>
-        <h2 className="text-xl font-bold tracking-tight">Tagebuch &amp; Mind Core</h2>
+        <p className="text-xs font-medium kora-muted">Mental Health &amp; Nervensystem</p>
+        <h2 className="text-[26px] leading-tight font-bold tracking-tight mt-0.5">
+          Tagebuch
+        </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="liquid-glass rounded-3xl p-4 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      <form onSubmit={handleSubmit} className="liquid-glass rounded-[24px] p-4 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {renderSlider(
-            'Stimmung / Mood',
+            'Stimmung',
             mood,
             setMood,
-            <Heart className="w-3.5 h-3.5 text-rose-400" />,
-            'text-rose-400'
+            <Heart className="w-3.5 h-3.5 text-[#fa2d48]" />
           )}
           {renderSlider(
-            'Energie-Level',
+            'Energie',
             energy,
             setEnergy,
-            <Zap className="w-3.5 h-3.5 text-amber-400" />,
-            'text-amber-400'
+            <Zap className="w-3.5 h-3.5 kora-muted" />
           )}
           {renderSlider(
-            'Stress / Belastung',
+            'Stress',
             stress,
             setStress,
-            <Brain className="w-3.5 h-3.5 text-purple-400" />,
-            'text-purple-400'
+            <Brain className="w-3.5 h-3.5 kora-muted" />
           )}
           {renderSlider(
             'Schlafqualität',
             sleepQuality,
             setSleepQuality,
-            <Moon className="w-3.5 h-3.5 text-cyan-400" />,
-            'text-cyan-400'
+            <Moon className="w-3.5 h-3.5 kora-muted" />
           )}
         </div>
 
-        <div className="space-y-2">
-          <p className="text-xs font-semibold opacity-75">Kontext &amp; Körpergefühl</p>
+        <div className="space-y-2 pt-1 border-t kora-hairline-divider">
+          <p className="text-xs font-medium kora-muted">Kontext &amp; Körpergefühl</p>
           <div className="flex flex-wrap gap-1.5">
             {PRESET_TAGS.map((tag) => {
               const active = selectedTags.includes(tag);
@@ -138,9 +135,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
                   type="button"
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
-                    active
-                      ? 'bg-purple-500/25 text-purple-300 border border-purple-400/40'
-                      : 'liquid-pill opacity-70 hover:opacity-100'
+                    active ? 'btn-primary' : 'liquid-pill kora-muted hover:opacity-100'
                   }`}
                 >
                   {tag}
@@ -151,8 +146,8 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="mind-note" className="block text-xs font-semibold opacity-75">
-            Reflexion, Gedanken &amp; körperliche Signale
+          <label htmlFor="mind-note" className="block text-xs font-medium kora-muted">
+            Gedanken, Regeneration &amp; körperliche Signale
           </label>
           <textarea
             id="mind-note"
@@ -160,25 +155,27 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Wie fühlst du dich heute körperlich & mental? Gibt es Schwachstellen, Muskelkater oder Stressfaktoren?"
-            className="w-full rounded-2xl bg-black/15 dark:bg-black/25 border border-white/15 p-3 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+            className="w-full rounded-2xl bg-black/[0.03] dark:bg-white/[0.05] border kora-hairline-divider p-3 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#fa2d48]/50"
           />
         </div>
 
         <button
           type="submit"
           disabled={isGeneratingReflection}
-          className="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-60"
+          className="btn-primary w-full py-3.5 rounded-full font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 disabled:opacity-50 transition"
         >
           {justSaved ? (
             <>
-              <Check className="w-4 h-4" />
-              <span>Gespeichert &amp; Kora-Impuls aktualisiert</span>
+              <Check className="w-4 h-4 text-[#fa2d48]" />
+              <span>Gespeichert &amp; Reflexion aktualisiert</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-[#fa2d48]" />
               <span>
-                {isGeneratingReflection ? 'Kora reflektiert...' : 'Eintrag speichern & KI-Reflexion'}
+                {isGeneratingReflection
+                  ? 'Kora reflektiert...'
+                  : 'Eintrag speichern & KI-Reflexion'}
               </span>
             </>
           )}
@@ -186,18 +183,18 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
       </form>
 
       {/* Journal History */}
-      <div className="space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider opacity-60 px-1">
+      <div className="space-y-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider kora-muted px-1">
           Verlauf ({entries.length})
         </h3>
         {entries
           .slice()
           .reverse()
           .map((entry) => (
-            <article key={entry.id} className="liquid-glass rounded-3xl p-4 space-y-2.5">
+            <article key={entry.id} className="liquid-glass rounded-[24px] p-4 space-y-2.5">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="font-bold">{entry.dateKey}</span>
-                <div className="flex items-center gap-2 text-[11px] font-mono opacity-80">
+                <span className="font-semibold">{entry.dateKey}</span>
+                <div className="flex items-center gap-2 text-[11px] font-mono kora-muted tabular-nums">
                   <span>Mood {entry.mood}/10</span>
                   <span>•</span>
                   <span>Energie {entry.energy}/10</span>
@@ -211,7 +208,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
                   {entry.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 opacity-85"
+                      className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.07] kora-muted"
                     >
                       {t}
                     </span>
@@ -219,15 +216,15 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
                 </div>
               )}
 
-              <p className="text-xs leading-relaxed opacity-90">{entry.note}</p>
+              <p className="text-[13px] leading-relaxed opacity-90">{entry.note}</p>
 
               {entry.aiReflection && (
-                <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/25 text-xs leading-relaxed">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-1 flex items-center gap-1">
+                <div className="p-3 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] text-xs leading-relaxed">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#fa2d48] mb-1 flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     <span>Kora Reflexion</span>
                   </p>
-                  <p className="opacity-90">{entry.aiReflection}</p>
+                  <p className="opacity-85">{entry.aiReflection}</p>
                 </div>
               )}
             </article>

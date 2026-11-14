@@ -10,6 +10,7 @@ dist-ssr/
 
 # Personal / Private User Data (NEVER commit to public portfolio)
 /Data/
+/inspiration/
 /personal-data/
 /public/personal-seed.local.json
 *.local.json
@@ -20,6 +21,7 @@ dist-ssr/
 android/app/build/
 android/.gradle/
 android/local.properties
+/Kora.apk
 
 # Logs & Editor
 *.log

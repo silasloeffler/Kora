@@ -8,6 +8,7 @@ const FORBIDDEN_PATTERNS = [
   /^public\/personal-seed\.local\.json$/i,
   /\.local\.json$/i,
   /^technogym_workout_logger\.html$/i,
+  /^Kora\.apk$/i,
   /^\.env(\..+)?$/i
 ];
 

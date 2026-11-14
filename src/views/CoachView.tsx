@@ -16,10 +16,10 @@ interface CoachViewProps {
 }
 
 const QUICK_PROMPTS = [
-  'Analysiere meine Schwachstellen & Kraft-Dysbalancen',
+  'Analysiere meine Schwachstellen & Dysbalancen',
   'Erstelle einen 45-Min Express-Plan für heute',
-  'Wie passt mein Re-Entry heute zu HRV & Schlaf?',
-  'Stelle mir eine Mental-Reflexionsfrage für heute Abend'
+  'Wie passt mein Training heute zu HRV & Schlaf?',
+  'Stelle mir eine Reflexionsfrage für heute Abend'
 ];
 
 export const CoachView: React.FC<CoachViewProps> = ({
@@ -67,41 +67,36 @@ export const CoachView: React.FC<CoachViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Kora Core Agent Header */}
-      <div className="liquid-glass rounded-3xl p-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full kora-orb animate-kora-orb flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+      {/* Minimalist Coach Header */}
+      <div className="liquid-glass rounded-[24px] p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-full kora-orb animate-kora-orb flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-[#1d1d1f]" />
           </div>
-          <div>
-            <h2 className="text-base font-bold">Kora AI Core</h2>
-            <p className="text-[11px] opacity-70">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold tracking-tight">Kora Coach</h2>
+            <p className="text-xs kora-muted truncate">
               {hasGeminiKey
-                ? `Live verbunden • ${modelName} (@google/genai)`
-                : 'Lokaler Smart-Coach (Gemini Key optional in Settings)'}
+                ? `${modelName} • Kontext & Health Sync`
+                : 'Lokaler Core-Coach (Gemini Key in Settings)'}
             </p>
           </div>
         </div>
-        <span
-          className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-            hasGeminiKey
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-              : 'liquid-pill opacity-80'
-          }`}
-        >
-          {hasGeminiKey ? 'Gemini Live' : 'Offline Core'}
+        <span className="liquid-pill text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 shrink-0">
+          {hasGeminiKey && <span className="w-1.5 h-1.5 rounded-full bg-[#fa2d48]" />}
+          <span>{hasGeminiKey ? 'Live' : 'Lokal'}</span>
         </span>
       </div>
 
       {/* Quick Prompts */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
         {QUICK_PROMPTS.map((q) => (
           <button
             key={q}
             type="button"
             disabled={isSending}
             onClick={() => onSendMessage(q)}
-            className="shrink-0 liquid-pill rounded-full px-3 py-1.5 text-[11px] font-semibold hover:scale-[1.02] transition cursor-pointer"
+            className="shrink-0 liquid-pill rounded-full px-3.5 py-1.5 text-[11px] font-medium hover:opacity-80 transition cursor-pointer"
           >
             {q}
           </button>
@@ -109,53 +104,52 @@ export const CoachView: React.FC<CoachViewProps> = ({
       </div>
 
       {/* Chat Stream */}
-      <div className="liquid-glass rounded-3xl p-4 space-y-3 max-h-[44vh] overflow-y-auto">
+      <div className="liquid-glass rounded-[24px] p-4 space-y-3 max-h-[44vh] overflow-y-auto">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isProactive = msg.role === 'proactive';
           return (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
-            >
+            <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
               <div
-                className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line ${
+                className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-line ${
                   isUser
-                    ? 'bg-cyan-500 text-slate-950 font-medium'
+                    ? 'btn-primary font-medium'
                     : isProactive
-                    ? 'bg-indigo-500/15 border border-indigo-400/30'
-                    : 'bg-black/15 dark:bg-white/[0.07] border border-white/10'
+                    ? 'bg-black/[0.05] dark:bg-white/[0.08]'
+                    : 'bg-black/[0.03] dark:bg-white/[0.05]'
                 }`}
               >
                 {isProactive && (
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 mb-1 flex items-center gap-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#fa2d48] mb-1 flex items-center gap-1">
                     <BellRing className="w-3 h-3" />
-                    <span>Proaktiver Cron Check-in</span>
+                    <span>Proaktiver Check-in</span>
                   </p>
                 )}
                 {msg.content}
 
                 {msg.suggestedPlan && (
-                  <div className="mt-2.5 pt-2.5 border-t border-white/15 space-y-2">
-                    <p className="font-bold text-cyan-300">{msg.suggestedPlan.name}</p>
-                    <p className="text-[11px] opacity-75">{msg.suggestedPlan.subtitle}</p>
+                  <div className="mt-2.5 pt-2.5 border-t kora-hairline-divider space-y-2">
+                    <p className="font-semibold">{msg.suggestedPlan.name}</p>
+                    <p className="text-xs kora-muted">{msg.suggestedPlan.subtitle}</p>
                     <button
                       type="button"
                       onClick={() => {
                         onApplySuggestedPlan(msg.suggestedPlan!);
                         setAppliedPlanIds((prev) => ({ ...prev, [msg.id]: true }));
                       }}
-                      className="px-3 py-1.5 rounded-full bg-cyan-500 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 cursor-pointer"
+                      className="btn-accent px-3.5 py-1.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
                     >
                       {appliedPlanIds[msg.id] ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>Plan übernommen!</span>
+                          <span>Plan übernommen</span>
                         </>
                       ) : (
                         <>
                           <Plus className="w-3.5 h-3.5" />
-                          <span>In Train-Tab übernehmen ({msg.suggestedPlan.exerciseIds.length} Übungen)</span>
+                          <span>
+                            In Train übernehmen ({msg.suggestedPlan.exerciseIds.length} Übungen)
+                          </span>
                         </>
                       )}
                     </button>
@@ -167,43 +161,50 @@ export const CoachView: React.FC<CoachViewProps> = ({
         })}
 
         {isSending && (
-          <div className="text-xs opacity-60 italic px-2">Kora analysiert Trainings- &amp; Gesundheitsdaten...</div>
+          <div className="text-xs kora-muted italic px-1">
+            Kora analysiert Trainings- &amp; Gesundheitsdaten...
+          </div>
         )}
       </div>
 
-      {/* Chat Input */}
-      <form onSubmit={handleSend} className="liquid-glass-elevated rounded-full p-1.5 flex items-center gap-2">
+      {/* Floating Glass Chat Input */}
+      <form
+        onSubmit={handleSend}
+        className="liquid-glass-elevated rounded-full p-1.5 flex items-center gap-2"
+      >
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Frag Kora zu Training, Schwachstellen, Schlaf oder Mental..."
+          placeholder="Frag Kora zu Training, Schwachstellen oder Schlaf..."
           className="flex-1 bg-transparent px-3.5 py-2 text-xs focus:outline-none"
         />
         <button
           type="submit"
           disabled={isSending || !input.trim()}
           aria-label="Nachricht senden"
-          className="w-9 h-9 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
+          className="btn-accent w-9 h-9 rounded-full flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-40 transition"
         >
           <Send className="w-4 h-4" />
         </button>
       </form>
 
       {/* Always-On Cron Scheduler */}
-      <div className="liquid-glass rounded-3xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
+      <div className="liquid-glass rounded-[24px] overflow-hidden divide-y kora-hairline-divider">
+        <div className="p-4 flex items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-bold flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-sm font-semibold flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-[#fa2d48]" />
               <span>Always-On Cron Check-ins</span>
             </h3>
-            <p className="text-[11px] opacity-65">Proaktive Agent-Impulse basierend auf Health Connect &amp; Journal</p>
+            <p className="text-[11px] kora-muted mt-0.5">
+              Proaktive Impulse aus Health Connect &amp; Tagebuch
+            </p>
           </div>
           <button
             type="button"
             onClick={() => setShowNewCron((v) => !v)}
-            className="liquid-pill px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+            className="liquid-pill px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Cron</span>
@@ -211,21 +212,24 @@ export const CoachView: React.FC<CoachViewProps> = ({
         </div>
 
         {showNewCron && (
-          <form onSubmit={handleCreateCron} className="p-3 rounded-2xl bg-black/15 dark:bg-white/5 border border-white/10 space-y-2 text-xs">
+          <form
+            onSubmit={handleCreateCron}
+            className="p-4 bg-black/[0.02] dark:bg-white/[0.02] space-y-2.5 text-xs"
+          >
             <div className="grid grid-cols-3 gap-2">
               <input
                 type="text"
                 required
                 value={cronName}
                 onChange={(e) => setCronName(e.target.value)}
-                placeholder="Titel (z. B. Mittagspulse)"
-                className="col-span-2 liquid-pill rounded-xl px-2.5 py-2 focus:outline-none"
+                placeholder="Titel (z. B. Mittagspuls)"
+                className="col-span-2 liquid-pill rounded-xl px-3 py-2 focus:outline-none"
               />
               <input
                 type="time"
                 value={cronTime}
                 onChange={(e) => setCronTime(e.target.value)}
-                className="liquid-pill rounded-xl px-2 py-2 focus:outline-none"
+                className="liquid-pill rounded-xl px-2.5 py-2 focus:outline-none"
               />
             </div>
             <input
@@ -234,58 +238,54 @@ export const CoachView: React.FC<CoachViewProps> = ({
               value={cronPrompt}
               onChange={(e) => setCronPrompt(e.target.value)}
               placeholder="Prompt für den proaktiven Agent..."
-              className="w-full liquid-pill rounded-xl px-2.5 py-2 focus:outline-none"
+              className="w-full liquid-pill rounded-xl px-3 py-2 focus:outline-none"
             />
-            <button type="submit" className="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold cursor-pointer">
+            <button
+              type="submit"
+              className="btn-primary w-full py-2.5 rounded-full font-semibold cursor-pointer"
+            >
               Cron-Job aktivieren
             </button>
           </form>
         )}
 
-        <div className="space-y-2">
-          {cronSchedules.map((job) => (
-            <div
-              key={job.id}
-              className="p-3 rounded-2xl bg-black/10 dark:bg-white/[0.04] border border-white/10 flex items-center justify-between gap-2 text-xs"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold truncate">{job.name}</span>
-                  <span className="text-[10px] font-mono opacity-60 px-1.5 py-0.5 rounded bg-white/10">
-                    {job.timeLabel}
-                  </span>
-                </div>
-                <p className="text-[11px] opacity-65 truncate mt-0.5">
-                  {job.lastSummary || job.promptTemplate}
-                </p>
+        {cronSchedules.map((job) => (
+          <div key={job.id} className="px-4 py-3 flex items-center justify-between gap-2 text-xs">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold truncate">{job.name}</span>
+                <span className="text-[10px] font-mono kora-muted px-2 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] shrink-0">
+                  {job.timeLabel}
+                </span>
               </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => onRunCronNow(job.id)}
-                  disabled={isSending}
-                  title="Jetzt proaktiv ausführen"
-                  className="liquid-pill px-2.5 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
-                >
-                  <Play className="w-3 h-3 text-cyan-400" />
-                  <span>Run</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onToggleCron(job.id)}
-                  className={`px-2.5 py-1.5 rounded-full text-[10px] font-bold cursor-pointer ${
-                    job.enabled
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                      : 'liquid-pill opacity-60'
-                  }`}
-                >
-                  {job.enabled ? 'ON' : 'OFF'}
-                </button>
-              </div>
+              <p className="text-[11px] kora-muted truncate mt-0.5">
+                {job.lastSummary || job.promptTemplate}
+              </p>
             </div>
-          ))}
-        </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => onRunCronNow(job.id)}
+                disabled={isSending}
+                title="Jetzt proaktiv ausführen"
+                className="liquid-pill px-2.5 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-1 cursor-pointer"
+              >
+                <Play className="w-3 h-3 text-[#fa2d48]" />
+                <span>Run</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggleCron(job.id)}
+                className={`px-2.5 py-1.5 rounded-full text-[10px] font-semibold cursor-pointer transition ${
+                  job.enabled ? 'btn-accent' : 'liquid-pill kora-muted'
+                }`}
+              >
+                {job.enabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

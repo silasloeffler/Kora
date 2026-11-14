@@ -674,7 +674,7 @@ export function App() {
                   ex.gymSettings[gym] = note;
                 }
               });
-              showToast('Geräte-Pin gespeichert');
+              showToast('Notiz gespeichert');
             }}
             onRemoveExerciseFromPlan={(exId) =>
               commitSnapshot((draft) => {
@@ -736,14 +736,6 @@ export function App() {
             exercises={snapshot.exercises}
             history={snapshot.history}
             healthMetrics={snapshot.healthMetrics}
-            activeGym={snapshot.activeWorkout.gym}
-            onUpdatePinNote={(exId, gym, note) => {
-              commitSnapshot((draft) => {
-                const ex = draft.exercises.find((e) => e.id === exId);
-                if (ex) ex.gymSettings[gym] = note;
-              });
-              showToast('Geräte-Pin gespeichert');
-            }}
             onDeleteHistory={(sessionId) =>
               commitSnapshot((draft) => {
                 draft.history = draft.history.filter((h) => h.id !== sessionId);
@@ -800,6 +792,7 @@ export function App() {
       <AddExerciseModal
         isOpen={addExerciseOpen}
         activeGym={snapshot.activeWorkout.gym}
+        existingExerciseNames={snapshot.exercises.map((e) => e.name)}
         onClose={() => setAddExerciseOpen(false)}
         onSave={(newEx: Exercise) => {
           commitSnapshot((draft) => {
