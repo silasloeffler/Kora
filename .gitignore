@@ -1,0 +1,27 @@
+# Dependencies & Build
+node_modules/
+dist/
+dist-ssr/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Personal / Private User Data (NEVER commit to public portfolio)
+/Data/
+/personal-data/
+/public/personal-seed.local.json
+*.local.json
+/technogym_workout_logger.html
+
+# Capacitor & Android Local Artifacts
+.capacitor/
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Logs & Editor
+*.log
+.DS_Store
+Thumbs.db
