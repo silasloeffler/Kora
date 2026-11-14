@@ -82,7 +82,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
         max={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[#fa2d48] cursor-pointer"
+        className="w-full cursor-pointer"
       />
     </div>
   );
@@ -102,7 +102,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
             'Stimmung',
             mood,
             setMood,
-            <Heart className="w-3.5 h-3.5 text-[#fa2d48]" />
+            <Heart className="w-3.5 h-3.5 text-accent" />
           )}
           {renderSlider(
             'Energie',
@@ -134,7 +134,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
+                  className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                     active ? 'btn-primary' : 'liquid-pill kora-muted hover:opacity-100'
                   }`}
                 >
@@ -155,23 +155,23 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Wie fühlst du dich heute körperlich & mental? Gibt es Schwachstellen, Muskelkater oder Stressfaktoren?"
-            className="w-full rounded-2xl bg-black/[0.03] dark:bg-white/[0.05] border kora-hairline-divider p-3 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#fa2d48]/50"
+            className="w-full rounded-2xl bg-black/[0.03] dark:bg-white/[0.05] border kora-hairline-divider p-3 text-xs leading-relaxed focus:outline-none"
           />
         </div>
 
         <button
           type="submit"
           disabled={isGeneratingReflection}
-          className="btn-primary w-full py-3.5 rounded-full font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 disabled:opacity-50 transition"
+          className="btn-primary w-full min-h-[46px] py-3.5 rounded-full font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 disabled:opacity-50 transition"
         >
           {justSaved ? (
             <>
-              <Check className="w-4 h-4 text-[#fa2d48]" />
+              <Check className="w-4 h-4 text-accent" />
               <span>Gespeichert &amp; Reflexion aktualisiert</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 text-[#fa2d48]" />
+              <Sparkles className="w-4 h-4 text-accent" />
               <span>
                 {isGeneratingReflection
                   ? 'Kora reflektiert...'
@@ -220,7 +220,7 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
 
               {entry.aiReflection && (
                 <div className="p-3 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] text-xs leading-relaxed">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#fa2d48] mb-1 flex items-center gap-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-accent mb-1 flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     <span>Kora Reflexion</span>
                   </p>

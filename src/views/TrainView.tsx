@@ -12,7 +12,7 @@ import {
   Timer,
   Trash2
 } from 'lucide-react';
-import { ActiveWorkoutState, Exercise, MuscleCategory, WorkoutPlan } from '../types/kora';
+import { ActiveWorkoutState, Exercise, WorkoutPlan } from '../types/kora';
 import { ExerciseIllustration } from '../components/ExerciseIllustration';
 
 interface TrainViewProps {
@@ -35,14 +35,10 @@ interface TrainViewProps {
   onAskAiPlanAdapter: () => void;
 }
 
-const CATEGORIES: Array<'Alle' | MuscleCategory> = [
-  'Alle',
-  'Beine',
-  'Rücken',
-  'Brust',
-  'Schultern',
-  'Arme',
-  'Core'
+const STATUS_FILTERS: Array<{ id: 'all' | 'open' | 'done'; label: string }> = [
+  { id: 'all', label: 'Alle' },
+  { id: 'open', label: 'Offen' },
+  { id: 'done', label: 'Erledigt' }
 ];
 
 export const TrainView: React.FC<TrainViewProps> = ({
@@ -65,7 +61,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
   onAskAiPlanAdapter
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'done'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<'Alle' | MuscleCategory>('Alle');
+  const [collapsedIds, setCollapsedIds] = useState<Record<string, boolean>>({});
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -76,7 +72,6 @@ export const TrainView: React.FC<TrainViewProps> = ({
     .filter((e): e is Exercise => Boolean(e));
 
   const filteredExercises = planExercises.filter((ex) => {
-    if (categoryFilter !== 'Alle' && ex.category !== categoryFilter) return false;
     const allDone = ex.sets.length > 0 && ex.sets.every((s) => s.done);
     if (statusFilter === 'open' && allDone) return false;
     if (statusFilter === 'done' && !allDone) return false;
@@ -88,6 +83,10 @@ export const TrainView: React.FC<TrainViewProps> = ({
     0
   );
   const totalSetsCount = planExercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+  const statusIndex = Math.max(
+    0,
+    STATUS_FILTERS.findIndex((s) => s.id === statusFilter)
+  );
 
   // Seamless recovery scroll to last focused exercise
   useEffect(() => {
@@ -101,12 +100,16 @@ export const TrainView: React.FC<TrainViewProps> = ({
     }
   }, [activeWorkout.focusedExerciseId]);
 
+  const toggleCollapsed = (exId: string) => {
+    setCollapsedIds((prev) => ({ ...prev, [exId]: !prev[exId] }));
+  };
+
   return (
     <div className="space-y-4">
       {recoveredBannerVisible && (
-        <div className="liquid-pill rounded-2xl px-4 py-2.5 text-xs font-medium flex items-center justify-between">
+        <div className="liquid-pill rounded-2xl px-4 py-3 text-xs font-medium flex items-center justify-between">
           <span>Session aus dem Hintergrund wiederhergestellt</span>
-          <Check className="w-4 h-4 text-[#fa2d48]" />
+          <Check className="w-4 h-4 text-accent" />
         </div>
       )}
 
@@ -119,13 +122,13 @@ export const TrainView: React.FC<TrainViewProps> = ({
               key={plan.id}
               type="button"
               onClick={() => onSelectPlan(plan.id)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+              className={`shrink-0 rounded-full min-h-[42px] px-4 py-2 text-xs font-semibold transition cursor-pointer flex items-center gap-2 ${
                 selected ? 'btn-primary' : 'liquid-pill kora-muted hover:opacity-100'
               }`}
             >
               <span>{plan.name}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full tabular-nums ${
+                className={`text-[11px] px-2 py-0.5 rounded-full tabular-nums ${
                   selected
                     ? 'bg-white/20 dark:bg-black/15'
                     : 'bg-black/[0.06] dark:bg-white/[0.08]'
@@ -140,45 +143,45 @@ export const TrainView: React.FC<TrainViewProps> = ({
         <button
           type="button"
           onClick={onAskAiPlanAdapter}
-          className="shrink-0 liquid-pill rounded-full px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
+          className="shrink-0 liquid-pill rounded-full min-h-[42px] px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#fa2d48]" />
+          <Sparkles className="w-3.5 h-3.5 text-accent" />
           <span>KI-Plan</span>
         </button>
       </div>
 
-      {/* Workout Action & Filter Surface */}
-      <div className="liquid-glass rounded-[24px] p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
+      {/* Workout Action & 3-Segment Status Switch */}
+      <div className="liquid-glass rounded-[24px] p-4 space-y-3.5">
+        <div className="flex items-center justify-between gap-2.5">
           <div className="min-w-0">
             <p className="text-[11px] kora-muted truncate">{activePlan?.subtitle}</p>
-            <p className="text-[13px] font-semibold mt-0.5 tabular-nums">
+            <p className="text-sm font-semibold mt-0.5 tabular-nums">
               {completedSetsCount} / {totalSetsCount} Sätze • {activeWorkout.gym}
             </p>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={onOpenAddExercise}
-              className="liquid-pill px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-85 transition"
+              className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               <span>Katalog</span>
             </button>
             {activeWorkout.isWorkoutActive ? (
               <button
                 type="button"
                 onClick={onFinishWorkout}
-                className="btn-accent px-3.5 py-2 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition"
+                className="btn-accent min-h-[42px] px-4 py-2 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition"
               >
-                <Flag className="w-3.5 h-3.5" />
+                <Flag className="w-4 h-4" />
                 <span>Abschließen</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={onStartWorkout}
-                className="btn-primary px-3.5 py-2 rounded-full font-semibold text-xs cursor-pointer hover:opacity-90 transition"
+                className="btn-primary min-h-[42px] px-5 py-2 rounded-full font-semibold text-xs cursor-pointer hover:opacity-90 transition"
               >
                 Starten
               </button>
@@ -186,33 +189,33 @@ export const TrainView: React.FC<TrainViewProps> = ({
           </div>
         </div>
 
-        {/* Status + Category Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 border-t kora-hairline-divider">
-          {(['all', 'open', 'done'] as const).map((st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => setStatusFilter(st)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition ${
-                statusFilter === st ? 'btn-primary' : 'liquid-pill kora-muted'
-              }`}
-            >
-              {st === 'all' ? 'Alle' : st === 'open' ? 'Offen' : 'Erledigt'}
-            </button>
-          ))}
-          <span className="kora-muted opacity-40 px-1">|</span>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCategoryFilter(cat)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium cursor-pointer transition ${
-                categoryFilter === cat ? 'btn-accent' : 'liquid-pill kora-muted'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Clean 3-Segment Status Switch with sliding bubble */}
+        <div className="relative rounded-full bg-black/[0.05] dark:bg-white/[0.06] p-1">
+          <div
+            aria-hidden="true"
+            className="absolute top-1 bottom-1 rounded-full btn-primary pointer-events-none"
+            style={{
+              left: `calc(4px + ${statusIndex} * ((100% - 8px) / 3))`,
+              width: 'calc((100% - 8px) / 3)',
+              transition: 'left 360ms cubic-bezier(0.28, 1.28, 0.5, 1)'
+            }}
+          />
+          <div className="relative z-10 grid grid-cols-3">
+            {STATUS_FILTERS.map((st) => (
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => setStatusFilter(st.id)}
+                className={`min-h-[38px] rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  statusFilter === st.id
+                    ? 'text-white dark:text-black'
+                    : 'kora-muted hover:opacity-100'
+                }`}
+              >
+                {st.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -220,6 +223,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
       <div className="space-y-3.5">
         {filteredExercises.map((ex) => {
           const isFocused = activeWorkout.focusedExerciseId === ex.id;
+          const isCollapsed = Boolean(collapsedIds[ex.id]);
           const doneCount = ex.sets.filter((s) => s.done).length;
           const allDone = ex.sets.length > 0 && doneCount === ex.sets.length;
           const gymNote = ex.gymSettings[activeWorkout.gym] || Object.values(ex.gymSettings)[0] || '';
@@ -230,14 +234,17 @@ export const TrainView: React.FC<TrainViewProps> = ({
               ref={(el) => {
                 cardRefs.current[ex.id] = el;
               }}
-              className={`liquid-glass rounded-[24px] p-4 space-y-3 transition-all ${
-                isFocused ? 'ring-1 ring-[#fa2d48]/45' : ''
+              className={`liquid-glass rounded-[24px] p-3.5 sm:p-4 space-y-3 transition-all ${
+                isFocused ? 'kora-focus-ring' : ''
               } ${allDone ? 'opacity-75' : ''}`}
             >
               {/* Header Row */}
               <div
-                onClick={() => onFocusExercise(ex.id)}
-                className="flex items-start justify-between gap-3 cursor-pointer"
+                onClick={() => {
+                  onFocusExercise(ex.id);
+                  if (isCollapsed) toggleCollapsed(ex.id);
+                }}
+                className="flex items-start justify-between gap-2.5 cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-16 h-14 rounded-2xl bg-black/[0.04] dark:bg-white/[0.05] flex items-center justify-center shrink-0 p-1.5">
@@ -247,17 +254,17 @@ export const TrainView: React.FC<TrainViewProps> = ({
                     <h3 className="text-[15px] font-semibold leading-snug tracking-tight">
                       {ex.name}
                     </h3>
-                    <p className="text-[11px] kora-muted mt-0.5 tabular-nums">
+                    <p className="text-xs kora-muted mt-0.5 tabular-nums">
                       {ex.category} • {doneCount}/{ex.sets.length} Sätze
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                       {ex.targetWeight !== undefined && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/[0.06] dark:bg-white/[0.09] tabular-nums">
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.06] dark:bg-white/[0.09] tabular-nums">
                           Ziel {ex.targetWeight} kg
                         </span>
                       )}
                       {ex.topWeight !== undefined && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full kora-muted bg-black/[0.03] dark:bg-white/[0.05] tabular-nums">
+                        <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full kora-muted bg-black/[0.03] dark:bg-white/[0.05] tabular-nums">
                           Peak {ex.topWeight} kg
                         </span>
                       )}
@@ -265,20 +272,20 @@ export const TrainView: React.FC<TrainViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onFocusExercise(isFocused ? '' : ex.id);
+                      toggleCollapsed(ex.id);
                     }}
-                    aria-label="Details umschalten"
-                    className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center cursor-pointer"
+                    aria-label={isCollapsed ? 'Sätze einblenden' : 'Sätze einklappen'}
+                    className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
                   >
-                    {isFocused ? (
-                      <ChevronUp className="w-3.5 h-3.5" />
+                    {isCollapsed ? (
+                      <ChevronDown className="w-4 h-4" />
                     ) : (
-                      <ChevronDown className="w-3.5 h-3.5" />
+                      <ChevronUp className="w-4 h-4" />
                     )}
                   </button>
                   <button
@@ -288,191 +295,201 @@ export const TrainView: React.FC<TrainViewProps> = ({
                       onRemoveExerciseFromPlan(ex.id);
                     }}
                     aria-label="Aus Plan entfernen"
-                    className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center kora-muted hover:text-[#fa2d48] cursor-pointer"
+                    className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center kora-muted hover:text-accent cursor-pointer active:scale-95 transition-transform"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Optional Seat / Gym Note */}
-              <div className="rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2 text-[11px]">
-                {editingNoteId === ex.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={noteDraft}
-                      onChange={(e) => setNoteDraft(e.target.value)}
-                      placeholder={`Sitzeinstellung / Notiz für ${activeWorkout.gym}...`}
-                      className="flex-1 bg-transparent focus:outline-none text-xs"
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onUpdatePinNote(ex.id, activeWorkout.gym, noteDraft);
-                        setEditingNoteId(null);
-                      }}
-                      className="btn-primary px-2.5 py-1 rounded-full font-semibold text-[10px] cursor-pointer"
-                    >
-                      Sichern
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate kora-muted flex items-center gap-1.5">
-                      <SlidersHorizontal className="w-3 h-3 shrink-0" />
-                      <span>
-                        {gymNote || `Optional: Sitz- & Gerätenotiz (${activeWorkout.gym})`}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingNoteId(ex.id);
-                        setNoteDraft(ex.gymSettings[activeWorkout.gym] || '');
-                      }}
-                      className="font-semibold flex items-center gap-1 shrink-0 cursor-pointer hover:text-[#fa2d48] transition"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      <span>Notiz</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Clean Borderless Set Rows with Subtle Hairline Dividers */}
-              <div className="rounded-2xl overflow-hidden divide-y kora-hairline-divider bg-black/[0.025] dark:bg-white/[0.03]">
-                {ex.sets.map((st, idx) => (
-                  <div
-                    key={st.id}
-                    className={`px-3 py-2 flex items-center justify-between gap-1.5 transition ${
-                      st.done ? 'bg-black/[0.04] dark:bg-white/[0.06]' : ''
-                    }`}
-                  >
-                    {/* Set Number + Remove */}
-                    <div className="flex items-center gap-1 w-8 shrink-0">
-                      <span className="text-xs font-semibold kora-muted tabular-nums">
-                        {idx + 1}
-                      </span>
-                      {ex.sets.length > 1 && (
+              {!isCollapsed && (
+                <>
+                  {/* Optional Seat / Gym Note */}
+                  <div className="rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] px-3.5 py-2.5 text-xs">
+                    {editingNoteId === ex.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={noteDraft}
+                          onChange={(e) => setNoteDraft(e.target.value)}
+                          placeholder={`Sitzeinstellung / Notiz für ${activeWorkout.gym}...`}
+                          className="flex-1 bg-transparent focus:outline-none text-xs min-h-[36px]"
+                          autoFocus
+                        />
                         <button
                           type="button"
-                          onClick={() => onDeleteSet(ex.id, st.id)}
-                          aria-label="Satz löschen"
-                          className="kora-muted opacity-45 hover:opacity-100 hover:text-[#fa2d48] cursor-pointer"
+                          onClick={() => {
+                            onUpdatePinNote(ex.id, activeWorkout.gym, noteDraft);
+                            setEditingNoteId(null);
+                          }}
+                          className="btn-primary min-h-[36px] px-3.5 rounded-full font-semibold text-xs cursor-pointer"
                         >
-                          <Minus className="w-3 h-3" />
+                          Sichern
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate kora-muted flex items-center gap-1.5">
+                          <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            {gymNote || `Optional: Sitz- & Gerätenotiz (${activeWorkout.gym})`}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingNoteId(ex.id);
+                            setNoteDraft(ex.gymSettings[activeWorkout.gym] || '');
+                          }}
+                          className="font-semibold flex items-center gap-1 shrink-0 cursor-pointer hover:text-accent transition min-h-[32px] px-2"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          <span>Notiz</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-                    {/* Weight Stepper */}
-                    <div className="flex items-center gap-1 flex-1 justify-center">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onUpdateSet(ex.id, st.id, 'weight', Math.max(0, st.weight - 2.5))
-                        }
-                        aria-label="Gewicht verringern"
-                        className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center active:scale-90 cursor-pointer"
+                  {/* Ergonomic 40px-44px Set Rows with Hairline Dividers */}
+                  <div className="rounded-2xl overflow-hidden divide-y kora-hairline-divider bg-black/[0.025] dark:bg-white/[0.03]">
+                    {ex.sets.map((st, idx) => (
+                      <div
+                        key={st.id}
+                        className={`px-2 py-2.5 flex items-center justify-between gap-1 transition ${
+                          st.done ? 'bg-black/[0.04] dark:bg-white/[0.06]' : ''
+                        }`}
                       >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={st.weight}
-                        onChange={(e) =>
-                          onUpdateSet(ex.id, st.id, 'weight', Number(e.target.value) || 0)
-                        }
-                        className="w-12 text-center bg-transparent font-mono text-xs font-semibold tabular-nums focus:outline-none"
-                      />
-                      <span className="text-[10px] kora-muted -ml-1 mr-0.5">kg</span>
-                      <button
-                        type="button"
-                        onClick={() => onUpdateSet(ex.id, st.id, 'weight', st.weight + 2.5)}
-                        aria-label="Gewicht erhöhen"
-                        className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center active:scale-90 cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
+                        {/* Set Number + optional Delete */}
+                        <div className="flex flex-col items-center justify-center w-5 shrink-0 gap-1">
+                          <span className="text-xs font-semibold kora-muted tabular-nums">
+                            {idx + 1}
+                          </span>
+                          {ex.sets.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => onDeleteSet(ex.id, st.id)}
+                              aria-label="Satz löschen"
+                              className="kora-muted opacity-45 hover:opacity-100 hover:text-accent cursor-pointer p-0.5"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
 
-                    {/* Reps Stepper */}
-                    <div className="flex items-center gap-1 flex-1 justify-center">
-                      <button
-                        type="button"
-                        onClick={() => onUpdateSet(ex.id, st.id, 'reps', Math.max(1, st.reps - 1))}
-                        aria-label="Wiederholungen verringern"
-                        className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center active:scale-90 cursor-pointer"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <input
-                        type="number"
-                        value={st.reps}
-                        onChange={(e) =>
-                          onUpdateSet(ex.id, st.id, 'reps', Number(e.target.value) || 0)
-                        }
-                        className="w-8 text-center bg-transparent font-mono text-xs font-semibold tabular-nums focus:outline-none"
-                      />
-                      <span className="text-[10px] kora-muted -ml-1">x</span>
-                      <button
-                        type="button"
-                        onClick={() => onUpdateSet(ex.id, st.id, 'reps', st.reps + 1)}
-                        aria-label="Wiederholungen erhöhen"
-                        className="liquid-pill w-7 h-7 rounded-full flex items-center justify-center active:scale-90 cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
+                        {/* Weight Stepper (40px hit targets) */}
+                        <div className="flex items-center gap-0.5 justify-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onUpdateSet(ex.id, st.id, 'weight', Math.max(0, st.weight - 2.5))
+                            }
+                            aria-label="Gewicht verringern"
+                            className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center active:scale-90 cursor-pointer transition-transform"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <div className="flex flex-col items-center w-11">
+                            <input
+                              type="number"
+                              step="0.5"
+                              value={st.weight}
+                              onChange={(e) =>
+                                onUpdateSet(ex.id, st.id, 'weight', Number(e.target.value) || 0)
+                              }
+                              className="w-11 text-center bg-transparent font-mono text-[13px] font-bold tabular-nums focus:outline-none leading-tight"
+                            />
+                            <span className="text-[9px] kora-muted leading-none">kg</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateSet(ex.id, st.id, 'weight', st.weight + 2.5)}
+                            aria-label="Gewicht erhöhen"
+                            className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center active:scale-90 cursor-pointer transition-transform"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
 
-                    {/* Complete Set Check Button */}
+                        {/* Reps Stepper (40px hit targets) */}
+                        <div className="flex items-center gap-0.5 justify-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onUpdateSet(ex.id, st.id, 'reps', Math.max(1, st.reps - 1))
+                            }
+                            aria-label="Wiederholungen verringern"
+                            className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center active:scale-90 cursor-pointer transition-transform"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <div className="flex flex-col items-center w-8">
+                            <input
+                              type="number"
+                              value={st.reps}
+                              onChange={(e) =>
+                                onUpdateSet(ex.id, st.id, 'reps', Number(e.target.value) || 0)
+                              }
+                              className="w-8 text-center bg-transparent font-mono text-[13px] font-bold tabular-nums focus:outline-none leading-tight"
+                            />
+                            <span className="text-[9px] kora-muted leading-none">Wdh</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateSet(ex.id, st.id, 'reps', st.reps + 1)}
+                            aria-label="Wiederholungen erhöhen"
+                            className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center active:scale-90 cursor-pointer transition-transform"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Complete Set Check Button (44px ergonomic hit target) */}
+                        <button
+                          type="button"
+                          onClick={() => onToggleSetDone(ex.id, st.id)}
+                          aria-label={st.done ? 'Satz als offen markieren' : 'Satz abschließen'}
+                          className={`w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer shrink-0 active:scale-90 ${
+                            st.done ? 'btn-accent' : 'liquid-pill kora-muted hover:opacity-100'
+                          }`}
+                        >
+                          <Check className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Card Footer Actions */}
+                  <div className="flex items-center justify-between pt-0.5 text-xs">
                     <button
                       type="button"
-                      onClick={() => onToggleSetDone(ex.id, st.id)}
-                      aria-label={st.done ? 'Satz als offen markieren' : 'Satz abschließen'}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer shrink-0 ${
-                        st.done ? 'btn-accent' : 'liquid-pill kora-muted hover:opacity-100'
-                      }`}
+                      onClick={() => onAddSet(ex.id)}
+                      className="min-h-[38px] px-2 font-semibold flex items-center gap-1.5 cursor-pointer hover:text-accent transition"
                     >
-                      <Check className="w-4 h-4" />
+                      <Plus className="w-4 h-4" />
+                      <span>Satz hinzufügen</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onStartRestTimer(ex.defaultRestSeconds)}
+                      className="min-h-[38px] px-2 kora-muted hover:opacity-100 flex items-center gap-1.5 cursor-pointer tabular-nums transition"
+                    >
+                      <Timer className="w-4 h-4" />
+                      <span>{ex.defaultRestSeconds}s Pause</span>
                     </button>
                   </div>
-                ))}
-              </div>
-
-              {/* Card Footer Actions */}
-              <div className="flex items-center justify-between pt-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => onAddSet(ex.id)}
-                  className="font-semibold flex items-center gap-1 py-1 cursor-pointer hover:text-[#fa2d48] transition"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Satz hinzufügen</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onStartRestTimer(ex.defaultRestSeconds)}
-                  className="kora-muted hover:opacity-100 flex items-center gap-1 py-1 cursor-pointer tabular-nums transition"
-                >
-                  <Timer className="w-3.5 h-3.5" />
-                  <span>{ex.defaultRestSeconds}s Pause</span>
-                </button>
-              </div>
+                </>
+              )}
             </div>
           );
         })}
 
         {filteredExercises.length === 0 && (
-          <div className="liquid-glass rounded-[24px] p-8 text-center space-y-2">
+          <div className="liquid-glass rounded-[24px] p-8 text-center space-y-3">
             <p className="text-xs kora-muted">Keine Übungen für diesen Filter gefunden.</p>
             <button
               type="button"
               onClick={onOpenAddExercise}
-              className="btn-primary px-4 py-2 rounded-full text-xs font-semibold cursor-pointer"
+              className="btn-primary min-h-[44px] px-5 py-2.5 rounded-full text-xs font-semibold cursor-pointer"
             >
               Übung aus Katalog wählen
             </button>

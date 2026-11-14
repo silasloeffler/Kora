@@ -13,8 +13,8 @@ It unifies **strength training**, **mental health journaling**, **Health Connect
    - Every weight/rep adjustment, set completion, and focused exercise card writes atomically to **IndexedDB (Dexie)** and mirrors a synchronous recovery pointer (`kora_active_workout_v1`) so cold-starting Kora while a session is active jumps straight back to the exact exercise and set with **zero menu clicks**.
    - **Wall-Clock Rest Timer**: Stores exact target completion timestamps (`restTimerTargetEndTime`) rather than relying solely on in-memory `setInterval` ticks, keeping rest countdowns accurate across app switches and device sleep.
 
-2. **Minimalist Liquid Glass Design System (Dark & Light Mode)**
-   - Borderless `0.5px`-hairline Gaussian blur surfaces (`backdrop-filter: blur(...) saturate(200%)`), OLED black `#000000` Dark Mode, `#f5f5f7` Light Mode, restrained `#fa2d48` coral accent, floating top/bottom pill bars, and a floating live workout/rest-timer mini-pill.
+2. **Minimalist Liquid Glass Design System (Dark & Light Mode + Custom Accent Palette)**
+   - Borderless `0.5px`-hairline Gaussian blur surfaces (`backdrop-filter: blur(...) saturate(...)`), OLED black `#000000` Dark Mode, `#f5f5f7` Light Mode, user-customizable contrast accent palette (default `#fa2d48`), 4 selectable Core-Dot brand marks, floating top/bottom pill bars with sliding liquid-bubble transitions, Android edge-to-edge camera safe-area handling, and an interactive Laptop Phone Preview bezel (`412×892`).
    - **Minimalist Black & White Exercise Visualizations**: Custom architectural SVG line-art illustrations for 18 biomechanical movement patterns with subtle target-muscle highlights that adapt to Dark and Light themes.
    - **82-Exercise Structured Catalog**: Searchable and filterable catalog (`src/data/exerciseCatalog.ts`) spanning Machine, Cable, Dumbbell, Barbell, and Bodyweight/Rings movements across all 6 major muscle groups, plus inline studio seat/setup notes.
 

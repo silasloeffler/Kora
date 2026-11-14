@@ -4,6 +4,9 @@ import path from 'node:path';
 
 const FORBIDDEN_PATTERNS = [
   /^Data\//i,
+  /^Feedback\//i,
+  /^inspiration\//i,
+  /^Screenshot_/i,
   /^personal-data\//i,
   /^public\/personal-seed\.local\.json$/i,
   /\.local\.json$/i,

@@ -71,10 +71,10 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <button
           type="button"
           onClick={onSyncHealth}
-          className="liquid-pill rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
+          className="liquid-pill min-h-[40px] rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
         >
           <RefreshCw
-            className={`w-3.5 h-3.5 kora-muted ${isSyncingHealth ? 'animate-spin text-[#fa2d48]' : ''}`}
+            className={`w-3.5 h-3.5 kora-muted ${isSyncingHealth ? 'animate-spin text-accent' : ''}`}
           />
           <span>Sync</span>
         </button>
@@ -90,8 +90,8 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#fa2d48] animate-pulse shrink-0" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#fa2d48]">
+                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse shrink-0" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-accent">
                     Aktiv • {formatElapsedMinutes(activeWorkout.startedAt)}
                   </span>
                 </div>
@@ -104,9 +104,9 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
             <button
               type="button"
               onClick={onResumeWorkout}
-              className="btn-accent px-4 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-90 transition"
+              className="btn-accent min-h-[44px] px-5 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-90 transition"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
+              <Play className="w-4 h-4 fill-current" />
               <span>Weiter</span>
             </button>
           </div>
@@ -128,9 +128,9 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => activePlan && onStartWorkout(activePlan.id)}
-              className="btn-primary px-4 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-90 transition"
+              className="btn-primary min-h-[44px] px-5 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-90 transition"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
+              <Play className="w-4 h-4 fill-current" />
               <span>Starten</span>
             </button>
           </div>
@@ -141,7 +141,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
       <div className="liquid-glass rounded-[24px] grid grid-cols-3 divide-x kora-hairline-divider">
         <div className="p-4 flex flex-col justify-between gap-2">
           <div className="flex items-center justify-between">
-            <Activity className="w-3.5 h-3.5 text-[#fa2d48]" />
+            <Activity className="w-3.5 h-3.5 text-accent" />
             <span className="text-[10px] font-medium kora-muted">Readiness</span>
           </div>
           <div>
@@ -187,16 +187,16 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
       <div className="liquid-glass rounded-[24px] p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#fa2d48]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
             <span className="text-xs font-semibold tracking-tight">Kora Coach</span>
             <span className="text-[11px] kora-muted">• Daily Cron</span>
           </div>
           <button
             type="button"
             onClick={onRunProactiveCheckin}
-            className="liquid-pill px-3 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition"
+            className="liquid-pill min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
           >
-            <Sparkles className="w-3 h-3 text-[#fa2d48]" />
+            <Sparkles className="w-3.5 h-3.5 text-accent" />
             <span>Check-in</span>
           </button>
         </div>
@@ -214,7 +214,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigateTab('coach')}
-            className="text-xs font-semibold text-[#fa2d48] flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition"
+            className="text-xs font-semibold text-accent flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition min-h-[36px] px-2"
           >
             <span>Coach öffnen</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -227,25 +227,25 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigateTab('train')}
-          className="liquid-pill px-3.5 py-2 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
         >
-          <Dumbbell className="w-3.5 h-3.5" />
+          <Dumbbell className="w-4 h-4" />
           <span>Training</span>
         </button>
         <button
           type="button"
           onClick={() => onNavigateTab('mind')}
-          className="liquid-pill px-3.5 py-2 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
         >
-          <Brain className="w-3.5 h-3.5" />
+          <Brain className="w-4 h-4" />
           <span>Tagebuch</span>
         </button>
         <button
           type="button"
           onClick={() => onNavigateTab('insights')}
-          className="liquid-pill px-3.5 py-2 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
         >
-          <BarChart3 className="w-3.5 h-3.5" />
+          <BarChart3 className="w-4 h-4" />
           <span>Verlauf</span>
         </button>
       </div>
@@ -260,7 +260,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigateTab('insights')}
-              className="text-xs font-medium text-[#fa2d48] cursor-pointer hover:opacity-80 transition"
+              className="text-xs font-semibold text-accent cursor-pointer hover:opacity-80 transition py-1 px-2"
             >
               Alle
             </button>

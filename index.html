@@ -26,6 +26,10 @@
             document.documentElement.classList.remove('light');
             document.documentElement.classList.add('dark');
           }
+          var a = localStorage.getItem('kora_accent_v1');
+          if (a && /^#[0-9a-fA-F]{6}$/.test(a)) {
+            document.documentElement.style.setProperty('--kora-accent', a);
+          }
         } catch (e) {}
       })();
     </script>

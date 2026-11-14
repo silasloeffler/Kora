@@ -10,6 +10,9 @@ dist-ssr/
 
 # Personal / Private User Data (NEVER commit to public portfolio)
 /Data/
+/Feedback/
+/feedback/
+/Screenshot_*.png
 /inspiration/
 /personal-data/
 /public/personal-seed.local.json

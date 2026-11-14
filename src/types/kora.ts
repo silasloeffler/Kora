@@ -1,5 +1,7 @@
 export type ThemeMode = 'dark' | 'light';
 
+export type LogoVariant = 'orbital' | 'eclipse' | 'compass' | 'monogram';
+
 export type AppTab = 'core' | 'train' | 'mind' | 'coach' | 'insights';
 
 export type MuscleCategory =
@@ -151,6 +153,8 @@ export interface CronSchedule {
 
 export interface AppSettings {
   theme: ThemeMode;
+  accentColor: string;
+  logoVariant: LogoVariant;
   userName: string;
   gyms: string[];
   defaultRestSeconds: number;

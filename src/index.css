@@ -4,28 +4,49 @@
 
 :root {
   --kora-bg: #f5f5f7;
-  --kora-surface: rgba(255, 255, 255, 0.82);
-  --kora-surface-floating: rgba(255, 255, 255, 0.72);
-  --kora-surface-sub: rgba(0, 0, 0, 0.04);
+  --kora-surface: rgba(255, 255, 255, 0.66);
+  --kora-surface-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(242, 242, 247, 0.6) 100%);
+  --kora-surface-floating: rgba(255, 255, 255, 0.58);
+  --kora-surface-sub: rgba(0, 0, 0, 0.055);
   --kora-text: #1d1d1f;
-  --kora-muted: #86868b;
-  --kora-hairline: rgba(0, 0, 0, 0.06);
+  --kora-muted: #6e6e73;
+  --kora-hairline: rgba(0, 0, 0, 0.08);
+  --kora-rim-top: rgba(255, 255, 255, 0.92);
+  --kora-rim-bottom: rgba(0, 0, 0, 0.06);
   --kora-accent: #fa2d48;
-  --kora-shadow-card: 0 2px 16px -4px rgba(0, 0, 0, 0.05);
-  --kora-shadow-floating: 0 12px 32px -8px rgba(0, 0, 0, 0.14);
+  --kora-shadow-card: 0 4px 20px -6px rgba(0, 0, 0, 0.07);
+  --kora-shadow-floating: 0 14px 36px -8px rgba(0, 0, 0, 0.16);
+  --kora-backdrop-filter: blur(36px) saturate(210%) brightness(1.03);
+  --kora-backdrop-elevated: blur(44px) saturate(240%) brightness(1.04);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html.dark {
   --kora-bg: #000000;
-  --kora-surface: rgba(28, 28, 30, 0.78);
-  --kora-surface-floating: rgba(34, 34, 36, 0.72);
-  --kora-surface-sub: rgba(255, 255, 255, 0.06);
+  --kora-surface: rgba(34, 34, 38, 0.58);
+  --kora-surface-sheen: linear-gradient(180deg, rgba(72, 72, 78, 0.42) 0%, rgba(26, 26, 30, 0.54) 100%);
+  --kora-surface-floating: rgba(44, 44, 48, 0.46);
+  --kora-surface-sub: rgba(255, 255, 255, 0.08);
   --kora-text: #f5f5f7;
-  --kora-muted: #8e8e93;
-  --kora-hairline: rgba(255, 255, 255, 0.07);
-  --kora-accent: #fa2d48;
-  --kora-shadow-card: 0 4px 20px -6px rgba(0, 0, 0, 0.45);
-  --kora-shadow-floating: 0 16px 40px -10px rgba(0, 0, 0, 0.75);
+  --kora-muted: #98989f;
+  --kora-hairline: rgba(255, 255, 255, 0.14);
+  --kora-rim-top: rgba(255, 255, 255, 0.28);
+  --kora-rim-bottom: rgba(0, 0, 0, 0.35);
+  --kora-shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  --kora-shadow-floating: 0 18px 44px -8px rgba(0, 0, 0, 0.85);
+  --kora-backdrop-filter: blur(34px) saturate(220%) brightness(1.12);
+  --kora-backdrop-elevated: blur(46px) saturate(260%) brightness(1.22);
+}
+
+html.plt-android,
+.phone-preview-bezel {
+  --safe-top: max(env(safe-area-inset-top, 0px), 46px);
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+.phone-preview-bezel {
+  transform: translateZ(0);
 }
 
 html,
@@ -38,7 +59,11 @@ body {
   min-height: 100dvh;
 }
 
-/* Pure subtle neutral backdrop — zero cliché neon/rainbow gradients */
+input[type="range"] {
+  accent-color: var(--kora-accent);
+}
+
+/* Pure neutral backdrop + subtle depth glow behind glass */
 .kora-ambient-canvas {
   position: fixed;
   inset: 0;
@@ -51,39 +76,171 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(900px 500px at 50% -10%, rgba(255, 255, 255, 0.045), transparent 70%);
+  background:
+    radial-gradient(640px 420px at 18% 8%, color-mix(in srgb, var(--kora-accent) 11%, transparent), transparent 72%),
+    radial-gradient(760px 480px at 85% 92%, rgba(255, 255, 255, 0.05), transparent 70%);
 }
 
 html.light .kora-ambient-canvas::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(900px 500px at 50% -10%, rgba(255, 255, 255, 0.8), transparent 70%);
+  background:
+    radial-gradient(700px 440px at 20% 6%, color-mix(in srgb, var(--kora-accent) 9%, transparent), transparent 70%),
+    radial-gradient(900px 520px at 50% -10%, rgba(255, 255, 255, 0.9), transparent 72%);
 }
 
-/* Borderless / ultra-hairline Liquid Glass surfaces */
-.liquid-glass {
-  background: var(--kora-surface);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  border: 0.5px solid var(--kora-hairline);
-  box-shadow: var(--kora-shadow-card);
+/* Subtle top status-bar blur/scrim under punch-hole camera on Android */
+.kora-statusbar-scrim {
+  height: calc(var(--safe-top, 0px) + 10px);
+  background: linear-gradient(180deg, var(--kora-bg) 62%, transparent 100%);
+  pointer-events: none;
 }
 
-/* Apple Music style floating Gaussian-blurred chrome */
-.liquid-glass-elevated {
-  background: var(--kora-surface-floating);
-  backdrop-filter: blur(48px) saturate(200%);
-  -webkit-backdrop-filter: blur(48px) saturate(200%);
-  border: 0.5px solid var(--kora-hairline);
-  box-shadow: var(--kora-shadow-floating);
+@layer components {
+  /*
+   * Isolated ::before Gaussian blur layer prevents Android Chromium Skia from
+   * dropping outer blurs when child pills or nested elements overlap.
+   */
+  .liquid-glass {
+    position: relative;
+    isolation: isolate;
+    background: var(--kora-surface);
+    border: 0.5px solid var(--kora-hairline);
+    box-shadow:
+      inset 0 1px 0.5px var(--kora-rim-top),
+      inset 0 -1px 0.5px var(--kora-rim-bottom),
+      var(--kora-shadow-card);
+  }
+
+  .liquid-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    backdrop-filter: var(--kora-backdrop-filter);
+    -webkit-backdrop-filter: var(--kora-backdrop-filter);
+    transform: translateZ(0);
+  }
+
+  /* Apple Music Android style floating Liquid Glass bar */
+  .liquid-glass-elevated {
+    position: relative;
+    isolation: isolate;
+    background: var(--kora-surface-sheen);
+    border: 0.5px solid var(--kora-hairline);
+    box-shadow:
+      inset 0 1px 1px var(--kora-rim-top),
+      inset 0 -1px 1px var(--kora-rim-bottom),
+      var(--kora-shadow-floating);
+  }
+
+  .liquid-glass-elevated::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    backdrop-filter: var(--kora-backdrop-elevated);
+    -webkit-backdrop-filter: var(--kora-backdrop-elevated);
+    will-change: backdrop-filter;
+    transform: translateZ(0);
+  }
+
+  /* No backdrop-filter on nested pills so outer glass blur stays active in WebView */
+  .liquid-pill {
+    background: var(--kora-surface-sub);
+    border: 0.5px solid var(--kora-hairline);
+  }
 }
 
-.liquid-pill {
-  background: var(--kora-surface-sub);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border: 0.5px solid var(--kora-hairline);
+/* Sliding Liquid Glass Bubble inside Bottom Navigation Dock */
+.kora-dock-bubble {
+  background: rgba(0, 0, 0, 0.08);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.7);
+  transition: left 480ms cubic-bezier(0.28, 1.38, 0.52, 1);
+  transform-origin: center center;
+}
+
+html.dark .kora-dock-bubble {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.11) 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.24);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes koraLiquidBubble {
+  0% {
+    transform: scaleX(1) scaleY(1);
+  }
+  26% {
+    transform: scaleX(1.26) scaleY(0.82);
+  }
+  58% {
+    transform: scaleX(0.9) scaleY(1.1);
+  }
+  82% {
+    transform: scaleX(1.06) scaleY(0.95);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
+}
+
+.animate-liquid-bubble {
+  animation: koraLiquidBubble 500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes koraIconPop {
+  0% {
+    transform: scale(0.88);
+  }
+  50% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-icon-pop {
+  animation: koraIconPop 360ms cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+/* Dynamic Custom Accent Utilities */
+.text-accent {
+  color: var(--kora-accent);
+}
+
+.bg-accent {
+  background-color: var(--kora-accent);
+}
+
+.border-accent {
+  border-color: var(--kora-accent);
+}
+
+.btn-accent {
+  background-color: var(--kora-accent);
+  color: #ffffff;
+}
+
+.kora-focus-ring {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--kora-accent) 52%, transparent);
+}
+
+.kora-svg-accent-fill {
+  fill: color-mix(in srgb, var(--kora-accent) 26%, transparent);
+  stroke: var(--kora-accent);
+}
+
+.kora-svg-accent-stroke {
+  stroke: var(--kora-accent);
 }
 
 .kora-hairline-divider {
@@ -98,19 +255,15 @@ html.light .kora-ambient-canvas::before {
   background-color: #1d1d1f;
   color: #ffffff;
 }
+
 html.dark .btn-primary {
   background-color: #f5f5f7;
   color: #000000;
 }
 
-.btn-accent {
-  background-color: #fa2d48;
-  color: #ffffff;
-}
-
 .kora-orb {
   background: radial-gradient(circle at 32% 32%, #ffffff 0%, #d4d4d8 52%, #71717a 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 html.dark .kora-orb {

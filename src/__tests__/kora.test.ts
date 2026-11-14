@@ -140,8 +140,10 @@ describe('Exercise Catalog (80+ structured exercises)', () => {
 });
 
 describe('Privacy Guard (Personal Data Separation)', () => {
-  it('blocks personal data screenshots, local seeds, HTML prototypes, Kora.apk, and env files', () => {
+  it('blocks personal data screenshots, feedback folders, local seeds, HTML prototypes, Kora.apk, and env files', () => {
     expect(isForbiddenPath('Data/Screenshot_20261114-112845.png')).toBe(true);
+    expect(isForbiddenPath('Feedback/Screenshot_20261114-195040.png')).toBe(true);
+    expect(isForbiddenPath('Screenshot_20261114-195040.png')).toBe(true);
     expect(isForbiddenPath('personal-data/silas-seed.local.json')).toBe(true);
     expect(isForbiddenPath('public/personal-seed.local.json')).toBe(true);
     expect(isForbiddenPath('technogym_workout_logger.html')).toBe(true);

@@ -4,6 +4,7 @@ import { ActiveWorkoutState, KoraSnapshot } from '../types/kora';
 
 const ACTIVE_SESSION_LS_KEY = 'kora_active_workout_v1';
 const THEME_LS_KEY = 'kora_theme_v1';
+const ACCENT_LS_KEY = 'kora_accent_v1';
 
 interface SnapshotRow {
   id: string;
@@ -80,6 +81,17 @@ export function writeSyncTheme(theme: 'dark' | 'light'): void {
   }
 }
 
+export function writeSyncAccent(accentColor: string): void {
+  if (typeof window === 'undefined') return;
+  const safeColor = /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : '#fa2d48';
+  try {
+    window.localStorage.setItem(ACCENT_LS_KEY, safeColor);
+    document.documentElement.style.setProperty('--kora-accent', safeColor);
+  } catch {
+    // Ignore
+  }
+}
+
 export async function fetchPersonalSeedIfPresent(): Promise<KoraSnapshot | null> {
   if (typeof fetch === 'undefined') return null;
   try {
@@ -103,6 +115,8 @@ function applyEnvDefaults(snapshot: KoraSnapshot): KoraSnapshot {
   if (envApiKey && !snapshot.settings.geminiApiKey) {
     snapshot.settings.geminiApiKey = envApiKey;
   }
+  snapshot.settings.accentColor = snapshot.settings.accentColor || '#fa2d48';
+  snapshot.settings.logoVariant = snapshot.settings.logoVariant || 'orbital';
   return snapshot;
 }
 
@@ -117,6 +131,7 @@ export async function loadInitialSnapshot(): Promise<{
       const syncActive = readSyncActiveWorkout();
       snap.activeWorkout = mergeActiveWorkoutRecovery(snap.activeWorkout, syncActive);
       writeSyncTheme(snap.settings.theme);
+      writeSyncAccent(snap.settings.accentColor);
       return {
         snapshot: snap,
         recoveredActiveWorkout: snap.activeWorkout.isWorkoutActive
@@ -129,6 +144,7 @@ export async function loadInitialSnapshot(): Promise<{
   const personal = await fetchPersonalSeedIfPresent();
   const initial = applyEnvDefaults(cloneSnapshot(personal ?? DEMO_SEED));
   writeSyncTheme(initial.settings.theme);
+  writeSyncAccent(initial.settings.accentColor);
   writeSyncActiveWorkout(initial.activeWorkout);
 
   try {
@@ -150,6 +166,7 @@ export async function loadInitialSnapshot(): Promise<{
 export async function persistSnapshot(snapshot: KoraSnapshot): Promise<void> {
   writeSyncActiveWorkout(snapshot.activeWorkout);
   writeSyncTheme(snapshot.settings.theme);
+  writeSyncAccent(snapshot.settings.accentColor);
   try {
     await koraDb.snapshots.put({
       id: 'primary',

@@ -1,7 +1,17 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Capacitor } from '@capacitor/core';
 import App from './App';
 import './index.css';
+
+if (
+  typeof document !== 'undefined' &&
+  (Capacitor.getPlatform() === 'android' ||
+    (Capacitor.isNativePlatform() && /Android/i.test(navigator.userAgent)) ||
+    /Android/i.test(navigator.userAgent))
+) {
+  document.documentElement.classList.add('plt-android');
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Monitor, Moon, Palette, Smartphone, Sun } from 'lucide-react';
 import {
   AppSettings,
   AppTab,
@@ -17,6 +19,7 @@ import {
   parseImportedSnapshot,
   persistSnapshot,
   switchSeedProfile,
+  writeSyncAccent,
   writeSyncTheme
 } from './services/storage';
 import {
@@ -48,6 +51,12 @@ export function App() {
   const [isSyncingHealth, setIsSyncingHealth] = useState(false);
   const [isSendingCoach, setIsSendingCoach] = useState(false);
   const [hasUnreadProactive, setHasUnreadProactive] = useState(false);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.innerWidth >= 820 && !Capacitor.isNativePlatform()
+      : false
+  );
+  const [phonePreview, setPhonePreview] = useState(true);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const timerFinishedAlertedRef = useRef(false);
@@ -96,6 +105,20 @@ export function App() {
     }
     writeSyncTheme(theme);
   }, [snapshot?.settings.theme]);
+
+  // Apply custom accent color variable on document root
+  useEffect(() => {
+    if (!snapshot) return;
+    writeSyncAccent(snapshot.settings.accentColor || '#fa2d48');
+  }, [snapshot?.settings.accentColor]);
+
+  // Track responsive desktop viewport for optional Nothing Phone 2a preview frame
+  useEffect(() => {
+    if (typeof window === 'undefined' || Capacitor.isNativePlatform()) return;
+    const onResize = () => setIsDesktopViewport(window.innerWidth >= 820);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Initial load + 0-Click Instant Workout Recovery
   useEffect(() => {
@@ -534,14 +557,25 @@ export function App() {
       snapshot.activeWorkout.restTimerPausedRemaining > 0 &&
       snapshot.activeWorkout.restTimerPausedRemaining !== snapshot.activeWorkout.restTimerTotalSeconds);
 
-  return (
-    <div className="relative min-h-screen pb-40">
+  const showPhoneFrame = isDesktopViewport && phonePreview;
+
+  const appSurface = (
+    <div
+      className={
+        showPhoneFrame
+          ? 'relative h-full w-full overflow-y-auto no-scrollbar pb-44'
+          : 'relative min-h-screen pb-44'
+      }
+    >
       {/* Ambient Mesh Background */}
       <div className="kora-ambient-canvas" aria-hidden="true" />
 
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 liquid-glass-elevated rounded-full px-4 py-2 text-xs font-bold shadow-xl pointer-events-none">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50 liquid-glass-elevated rounded-full px-4 py-2 text-xs font-bold shadow-xl pointer-events-none"
+          style={{ top: 'calc(var(--safe-top, 0px) + 4.5rem)' }}
+        >
           {toastMsg}
         </div>
       )}
@@ -551,7 +585,7 @@ export function App() {
         userName={snapshot.settings.userName}
         activeGym={snapshot.activeWorkout.gym}
         gyms={snapshot.settings.gyms}
-        theme={snapshot.settings.theme}
+        logoVariant={snapshot.settings.logoVariant || 'orbital'}
         readinessScore={latestHealth?.readinessScore ?? 85}
         onChangeGym={(gym) => {
           commitSnapshot((draft) => {
@@ -559,16 +593,11 @@ export function App() {
           });
           showToast(`Studio: ${gym}`);
         }}
-        onToggleTheme={() =>
-          commitSnapshot((draft) => {
-            draft.settings.theme = draft.settings.theme === 'dark' ? 'light' : 'dark';
-          })
-        }
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      {/* Main Content Container */}
-      <main className="relative z-10 mx-auto w-full max-w-xl px-3.5 pt-3">
+      {/* Main Content Container (exact same max-w-xl px-4 width as Floating Chrome) */}
+      <main className="relative z-10 mx-auto w-full max-w-xl px-4 pt-3">
         {activeTab === 'core' && (
           <CoreDashboardView
             userName={snapshot.settings.userName}
@@ -756,13 +785,6 @@ export function App() {
         onToggleTimer={handleToggleTimer}
         onAdd15s={() => handleAdjustTimer(15)}
         onOpenTimerModal={() => setTimerModalOpen(true)}
-        onJumpToWorkout={() => setActiveTab('train')}
-        onDismissTimer={() =>
-          commitSnapshot((draft) => {
-            draft.activeWorkout.restTimerTargetEndTime = null;
-            draft.activeWorkout.restTimerPausedRemaining = null;
-          })
-        }
       />
 
       {/* Floating Bottom Pill Navigation Dock */}
@@ -818,6 +840,90 @@ export function App() {
         onImportBackup={(f) => void handleImportBackup(f)}
         onSwitchSeed={(source) => void handleSwitchSeed(source)}
       />
+    </div>
+  );
+
+  if (!isDesktopViewport) {
+    return appSurface;
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-[#e5e5ea] dark:bg-[#070709] text-[var(--kora-text)] flex flex-col items-center justify-center p-4 sm:p-6 gap-4">
+      {/* Desktop Preview Toolbar (Laptop-Only) */}
+      <div className="fixed top-4 right-4 z-50 liquid-glass-elevated rounded-full p-1.5 flex items-center gap-1.5 shadow-xl">
+        <button
+          type="button"
+          onClick={() => setPhonePreview((v) => !v)}
+          className="liquid-pill min-h-[36px] px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
+        >
+          {showPhoneFrame ? (
+            <>
+              <Monitor className="w-3.5 h-3.5" />
+              <span>Vollbild</span>
+            </>
+          ) : (
+            <>
+              <Smartphone className="w-3.5 h-3.5 text-accent" />
+              <span>Nothing Phone 2a (412×892)</span>
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            commitSnapshot((draft) => {
+              draft.settings.theme = draft.settings.theme === 'dark' ? 'light' : 'dark';
+            })
+          }
+          aria-label="Dark/Light Mode wechseln"
+          className="liquid-pill w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:opacity-85 transition"
+        >
+          {snapshot.settings.theme === 'dark' ? (
+            <Sun className="w-4 h-4" />
+          ) : (
+            <Moon className="w-4 h-4" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Design, Logo & Farbe anpassen"
+          className="liquid-pill w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:opacity-85 transition text-accent"
+        >
+          <Palette className="w-4 h-4" />
+        </button>
+      </div>
+
+      {showPhoneFrame ? (
+        <div className="phone-preview-bezel relative w-[412px] h-[892px] max-h-[calc(100vh-3rem)] rounded-[48px] border-[9px] border-neutral-800 bg-[var(--kora-bg)] shadow-[0_32px_90px_rgba(0,0,0,0.6)] overflow-hidden">
+          {/* Simulated Nothing Phone 2a Status Bar + Centered Selfie Punch-Hole Camera */}
+          <div
+            aria-hidden="true"
+            className="fixed top-0 left-0 right-0 z-50 h-[44px] px-7 flex items-center justify-between text-[11px] font-semibold pointer-events-none select-none"
+          >
+            <span className="tabular-nums">20:00</span>
+            <div className="w-[18px] h-[18px] rounded-full bg-black border border-white/15 shadow-inner" />
+            <div className="flex items-center gap-1.5 tabular-nums">
+              <span className="text-[10px] opacity-80">5G</span>
+              <div className="w-5 h-2.5 rounded-[3px] border border-current opacity-80 p-[1px] flex items-center">
+                <div className="w-3/4 h-full bg-current rounded-[1px]" />
+              </div>
+            </div>
+          </div>
+
+          {appSurface}
+
+          {/* Android Gesture Navigation Pill */}
+          <div
+            aria-hidden="true"
+            className="fixed bottom-1.5 left-1/2 -translate-x-1/2 z-50 w-28 h-1 rounded-full bg-current opacity-30 pointer-events-none"
+          />
+        </div>
+      ) : (
+        <div className="w-full">{appSurface}</div>
+      )}
     </div>
   );
 }

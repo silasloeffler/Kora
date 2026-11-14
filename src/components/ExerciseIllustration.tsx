@@ -15,8 +15,8 @@ export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
   pattern,
   className = 'w-20 h-16'
 }) => {
-  const accentFill = 'fill-[#fa2d48]/25 stroke-[#fa2d48]';
-  const accentStroke = 'stroke-[#fa2d48]';
+  const accentFill = 'kora-svg-accent-fill';
+  const accentStroke = 'kora-svg-accent-stroke';
 
   const renderScene = () => {
     switch (pattern) {

@@ -43,7 +43,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-xs kora-muted flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-[#fa2d48]" />
+              <TrendingUp className="w-3.5 h-3.5 text-accent" />
               <span>Re-Entry vs. All-Time Peak</span>
             </p>
             <p className="text-2xl font-bold tracking-tight mt-0.5 tabular-nums">
@@ -102,7 +102,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
       <div className="liquid-glass rounded-[24px] p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold flex items-center gap-1.5">
-            <Activity className="w-4 h-4 text-[#fa2d48]" />
+            <Activity className="w-4 h-4 text-accent" />
             <span>Health Connect Readiness (7 Tage)</span>
           </h3>
           <span className="text-[11px] kora-muted">HRV &amp; Schlaf</span>
@@ -116,7 +116,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
               </span>
               <div className="w-full max-w-[24px] flex-1 flex items-end bg-black/[0.05] dark:bg-white/[0.06] rounded-full overflow-hidden p-0.5">
                 <div
-                  className="w-full rounded-full bg-[#fa2d48] transition-all"
+                  className="w-full rounded-full bg-accent transition-all"
                   style={{ height: `${m.readinessScore}%` }}
                 />
               </div>
@@ -176,9 +176,9 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
                     type="button"
                     onClick={() => onDeleteHistory(session.id)}
                     aria-label="Eintrag löschen"
-                    className="kora-muted hover:text-[#fa2d48] p-1 cursor-pointer transition"
+                    className="liquid-pill w-9 h-9 rounded-full flex items-center justify-center kora-muted hover:text-accent cursor-pointer transition shrink-0"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
 

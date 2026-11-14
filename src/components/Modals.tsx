@@ -5,18 +5,22 @@ import {
   Database,
   Download,
   KeyRound,
+  Moon,
+  Palette,
   Pause,
   Play,
   Plus,
   RotateCcw,
   Search,
   Sparkles,
+  Sun,
   Upload,
   X
 } from 'lucide-react';
-import { AppSettings, Exercise, ExercisePattern, MuscleCategory } from '../types/kora';
+import { AppSettings, Exercise, ExercisePattern, LogoVariant, MuscleCategory } from '../types/kora';
 import { formatSecondsClock } from '../services/timer';
 import { ExerciseIllustration } from './ExerciseIllustration';
+import { ACCENT_PALETTE, KoraLogo, LOGO_VARIANTS } from './KoraLogo';
 import {
   createExerciseFromCatalogItem,
   EXERCISE_CATALOG,
@@ -83,7 +87,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
               cx="80"
               cy="80"
               r={radius}
-              stroke="#fa2d48"
+              stroke="var(--kora-accent)"
               strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={circumference}
@@ -121,14 +125,14 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(-15)}
-            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="liquid-pill min-h-[44px] px-3.5 rounded-2xl text-xs font-semibold cursor-pointer"
           >
             -15s
           </button>
           <button
             type="button"
             onClick={onToggle}
-            className="flex-1 py-2.5 rounded-xl btn-primary font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 min-h-[44px] rounded-2xl btn-primary font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
           >
             {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             <span>{isRunning ? 'Pause' : 'Start'}</span>
@@ -136,7 +140,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(15)}
-            className="liquid-pill py-2.5 px-3 rounded-xl text-xs font-semibold cursor-pointer"
+            className="liquid-pill min-h-[44px] px-3.5 rounded-2xl text-xs font-semibold cursor-pointer"
           >
             +15s
           </button>
@@ -144,7 +148,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
             type="button"
             onClick={onReset}
             aria-label="Zurücksetzen"
-            className="liquid-pill py-2.5 px-3 rounded-xl text-xs cursor-pointer"
+            className="liquid-pill min-h-[44px] px-3.5 rounded-2xl text-xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -338,12 +342,12 @@ export const AddExerciseModal: React.FC<AddExerciseModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddFromCatalog(item)}
-                      className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 cursor-pointer ${
+                      className={`shrink-0 min-h-[38px] px-3.5 py-2 rounded-full text-xs font-semibold flex items-center gap-1 cursor-pointer ${
                         alreadyInPlan ? 'liquid-pill kora-muted' : 'btn-primary'
                       }`}
                     >
-                      {alreadyInPlan ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                      <span>{alreadyInPlan ? 'Hinzugefügt' : 'Plan'}</span>
+                      {alreadyInPlan ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                      <span>{alreadyInPlan ? 'Im Plan' : 'Plan'}</span>
                     </button>
                   </div>
                 );
@@ -509,16 +513,131 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold tracking-tight">Kora Kern &amp; Daten</h3>
-            <p className="text-[11px] kora-muted">Offline-First IndexedDB • Strikte Datenschutz-Trennung</p>
+            <h3 className="text-base font-semibold tracking-tight">Kora Design &amp; Daten</h3>
+            <p className="text-[11px] kora-muted">Look, Akzentfarbe, Logo &amp; Offline-Speicher</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="liquid-pill w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
+            className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+
+        {/* Theme + Custom Contrast / Accent Color + Logo Picker */}
+        <div className="p-3.5 rounded-2xl liquid-pill space-y-4 text-xs">
+          {/* Dark / Light Switch */}
+          <div className="space-y-1.5">
+            <span className="font-semibold block">Modus</span>
+            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full bg-black/[0.06] dark:bg-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ theme: 'dark' })}
+                className={`min-h-[38px] rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition ${
+                  settings.theme === 'dark' ? 'btn-primary' : 'kora-muted'
+                }`}
+              >
+                <Moon className="w-3.5 h-3.5" />
+                <span>Dark OLED</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ theme: 'light' })}
+                className={`min-h-[38px] rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition ${
+                  settings.theme === 'light' ? 'btn-primary' : 'kora-muted'
+                }`}
+              >
+                <Sun className="w-3.5 h-3.5" />
+                <span>Light Glass</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Contrast / Accent Color Palette */}
+          <div className="space-y-2 pt-2 border-t kora-hairline-divider">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-accent" />
+                <span>Kontrastfarbe</span>
+              </span>
+              <span className="text-[11px] font-mono kora-muted uppercase">
+                {settings.accentColor}
+              </span>
+            </div>
+            <div className="flex items-center flex-wrap gap-2">
+              {ACCENT_PALETTE.map((preset) => {
+                const selected =
+                  settings.accentColor.toLowerCase() === preset.hex.toLowerCase();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => onUpdateSettings({ accentColor: preset.hex })}
+                    aria-label={preset.label}
+                    title={preset.label}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-90 ${
+                      selected
+                        ? 'ring-2 ring-offset-2 ring-offset-transparent ring-current scale-105'
+                        : 'hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: preset.hex }}
+                  >
+                    {selected && <Check className="w-4 h-4 text-white drop-shadow" />}
+                  </button>
+                );
+              })}
+
+              <label
+                title="Eigene Farbe frei wählen"
+                className="w-9 h-9 rounded-full liquid-pill flex items-center justify-center cursor-pointer hover:scale-105 transition overflow-hidden relative"
+              >
+                <input
+                  type="color"
+                  aria-label="Freie Akzentfarbe wählen"
+                  value={settings.accentColor}
+                  onChange={(e) => onUpdateSettings({ accentColor: e.target.value })}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <Plus className="w-4 h-4" />
+              </label>
+            </div>
+          </div>
+
+          {/* 4 Core Dot Logo Concepts */}
+          <div className="space-y-2 pt-2 border-t kora-hairline-divider">
+            <span className="font-semibold block">Kora Core-Logo (4 Entwürfe)</span>
+            <div className="grid grid-cols-2 gap-2">
+              {LOGO_VARIANTS.map((v) => {
+                const active = settings.logoVariant === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => onUpdateSettings({ logoVariant: v.id as LogoVariant })}
+                    className={`p-3 rounded-2xl text-left flex flex-col gap-2 cursor-pointer transition ${
+                      active
+                        ? 'bg-black/[0.08] dark:bg-white/[0.11] kora-focus-ring'
+                        : 'bg-black/[0.03] dark:bg-white/[0.04] hover:opacity-90'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <KoraLogo variant={v.id} className="w-9 h-9" />
+                      {active && (
+                        <span className="w-5 h-5 rounded-full btn-accent flex items-center justify-center">
+                          <Check className="w-3 h-3" />
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold leading-tight">{v.name}</p>
+                      <p className="text-[10px] kora-muted leading-snug mt-0.5">{v.subtitle}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Gemini API Key Section */}
@@ -581,7 +700,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="p-3.5 rounded-2xl liquid-pill space-y-2 text-xs">
           <div className="flex items-center justify-between">
             <span className="font-semibold flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-[#fa2d48]" />
+              <Activity className="w-3.5 h-3.5 text-accent" />
               Google Health Connect Bridge
             </span>
             <button

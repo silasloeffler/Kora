@@ -286,6 +286,8 @@ export const DEMO_SEED: KoraSnapshot = {
   },
   settings: {
     theme: 'dark',
+    accentColor: '#fa2d48',
+    logoVariant: 'orbital',
     userName: 'Athlete',
     gyms: ['Studio North', 'Metro Gym', 'Home Gym'],
     defaultRestSeconds: 90,
