@@ -116,7 +116,7 @@ function applyEnvDefaults(snapshot: KoraSnapshot): KoraSnapshot {
     snapshot.settings.geminiApiKey = envApiKey;
   }
   snapshot.settings.accentColor = snapshot.settings.accentColor || '#fa2d48';
-  snapshot.settings.logoVariant = snapshot.settings.logoVariant || 'orbital';
+  snapshot.settings.logoVariant = snapshot.settings.logoVariant || 'yinyang';
   return snapshot;
 }
 

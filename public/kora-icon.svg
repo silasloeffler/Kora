@@ -1,8 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="124" fill="#000000" />
-  <circle cx="256" cy="256" r="196" fill="none" stroke="#f5f5f7" stroke-width="14" stroke-opacity="0.18" />
-  <ellipse cx="256" cy="256" rx="184" ry="82" transform="rotate(-34 256 256)" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-opacity="0.92" />
-  <ellipse cx="256" cy="256" rx="184" ry="82" transform="rotate(34 256 256)" fill="none" stroke="#f5f5f7" stroke-width="16" stroke-opacity="0.48" />
-  <circle cx="256" cy="256" r="76" fill="#fa2d48" fill-opacity="0.22" />
-  <circle cx="256" cy="256" r="44" fill="#fa2d48" />
+  <circle cx="256" cy="256" r="198" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-opacity="0.88" />
+  <path
+    d="M256 58A198 198 0 0 0 256 454A99 99 0 0 1 256 256A99 99 0 0 0 256 58Z"
+    fill="#f5f5f7"
+    fill-opacity="0.14"
+  />
+  <path
+    d="M256 58A99 99 0 0 1 256 256A99 99 0 0 0 256 454"
+    fill="none"
+    stroke="#f5f5f7"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-opacity="0.92"
+  />
+  <circle cx="256" cy="157" r="60" fill="#fa2d48" fill-opacity="0.22" />
+  <circle cx="256" cy="157" r="34" fill="#fa2d48" />
+  <circle cx="256" cy="355" r="32" fill="none" stroke="#f5f5f7" stroke-width="20" stroke-opacity="0.85" />
 </svg>

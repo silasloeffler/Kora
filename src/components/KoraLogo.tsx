@@ -26,24 +26,24 @@ export interface LogoVariantInfo {
 
 export const LOGO_VARIANTS: LogoVariantInfo[] = [
   {
-    id: 'orbital',
-    name: 'Orbital Gyro',
-    subtitle: 'Body & Mind in Balance um den Kern'
+    id: 'yinyang',
+    name: 'Yin-Yang Core',
+    subtitle: 'Kraft & Regeneration im Fluss'
   },
   {
     id: 'eclipse',
-    name: 'Liquid Eclipse',
-    subtitle: 'Asymmetrische Korona mit Fokus-Kern'
+    name: 'Eclipse Orbit',
+    subtitle: 'Starship-Korona & Umlaufbahn'
   },
   {
-    id: 'compass',
-    name: 'Pulse Resonator',
-    subtitle: 'Biometrische Wellen & Taktgeber'
+    id: 'orbital',
+    name: 'Orbital Gyro',
+    subtitle: 'Body & Mind in Balance'
   },
   {
     id: 'monogram',
     name: 'Kinetic K-Core',
-    subtitle: 'Architektonisches K mit Core-Punkt'
+    subtitle: 'Architektonisches K mit Kern'
   }
 ];
 
@@ -53,7 +53,7 @@ interface KoraLogoProps {
 }
 
 export const KoraLogo: React.FC<KoraLogoProps> = ({
-  variant = 'orbital',
+  variant = 'yinyang',
   className = 'w-8 h-8'
 }) => {
   return (
@@ -64,6 +64,42 @@ export const KoraLogo: React.FC<KoraLogoProps> = ({
       className={className}
       aria-hidden="true"
     >
+      {variant === 'yinyang' && (
+        <g>
+          <circle
+            cx="20"
+            cy="20"
+            r="15.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeOpacity="0.88"
+          />
+          <path
+            d="M20 4.5A15.5 15.5 0 0 0 20 35.5A7.75 7.75 0 0 1 20 20A7.75 7.75 0 0 0 20 4.5Z"
+            fill="currentColor"
+            fillOpacity="0.14"
+          />
+          <path
+            d="M20 4.5A7.75 7.75 0 0 1 20 20A7.75 7.75 0 0 0 20 35.5"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeOpacity="0.92"
+          />
+          <circle cx="20" cy="12.25" r="4.8" fill="var(--kora-accent)" fillOpacity="0.22" />
+          <circle cx="20" cy="12.25" r="2.7" fill="var(--kora-accent)" />
+          <circle
+            cx="20"
+            cy="27.75"
+            r="2.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            fill="none"
+            strokeOpacity="0.85"
+          />
+        </g>
+      )}
+
       {variant === 'orbital' && (
         <g>
           <circle
@@ -101,17 +137,27 @@ export const KoraLogo: React.FC<KoraLogoProps> = ({
 
       {variant === 'eclipse' && (
         <g>
+          <ellipse
+            cx="20"
+            cy="20"
+            rx="16.2"
+            ry="6.2"
+            transform="rotate(-28 20 20)"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeOpacity="0.38"
+          />
           <path
             d="M32.2 26.8A14 14 0 1 1 26.8 7.8"
             stroke="currentColor"
-            strokeWidth="2.4"
+            strokeWidth="2.3"
             strokeLinecap="round"
             strokeOpacity="0.9"
           />
           <path
             d="M11.6 15.2A9.8 9.8 0 0 0 24.8 28.4"
             stroke="var(--kora-accent)"
-            strokeWidth="1.9"
+            strokeWidth="1.8"
             strokeLinecap="round"
             strokeOpacity="0.72"
           />
@@ -120,10 +166,10 @@ export const KoraLogo: React.FC<KoraLogoProps> = ({
             cy="10.6"
             r="1.7"
             fill="currentColor"
-            fillOpacity="0.65"
+            fillOpacity="0.72"
           />
-          <circle cx="20" cy="20" r="6.4" fill="var(--kora-accent)" fillOpacity="0.2" />
-          <circle cx="20" cy="20" r="3.8" fill="var(--kora-accent)" />
+          <circle cx="20" cy="20" r="6.2" fill="var(--kora-accent)" fillOpacity="0.2" />
+          <circle cx="20" cy="20" r="3.6" fill="var(--kora-accent)" />
         </g>
       )}
 

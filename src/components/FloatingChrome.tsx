@@ -132,8 +132,11 @@ export const FloatingWorkoutPill: React.FC<FloatingWorkoutPillProps> = ({
               onClick={onOpenTimerModal}
               className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer"
             >
-              <div className="w-10 h-10 rounded-xl liquid-pill flex items-center justify-center shrink-0">
-                <span className="text-xs font-mono font-semibold tracking-tight tabular-nums">
+              <div className="h-10 min-w-[76px] px-3.5 rounded-full bg-black/[0.06] dark:bg-white/[0.09] border border-[var(--kora-hairline)] flex items-center justify-center gap-1.5 shrink-0">
+                {isTimerRunning && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0" />
+                )}
+                <span className="text-[14px] font-semibold tracking-wide tabular-nums leading-none">
                   {isTimerRunning || remainingSeconds !== totalSeconds
                     ? formatSecondsClock(remainingSeconds)
                     : 'LIVE'}
@@ -146,7 +149,7 @@ export const FloatingWorkoutPill: React.FC<FloatingWorkoutPillProps> = ({
                 </p>
                 <p className="text-[11px] kora-muted tabular-nums">
                   {isTimerRunning
-                    ? `Pause läuft • ${formatSecondsClock(remainingSeconds)}`
+                    ? 'Satzpause läuft'
                     : `Session • ${formatElapsedMinutes(startedAt)}`}
                 </p>
               </div>
@@ -238,15 +241,15 @@ export const KoraDock: React.FC<KoraDockProps> = ({
       style={{ bottom: 'calc(var(--safe-bottom, 0px) + 10px)' }}
     >
       <div className="mx-auto w-full max-w-xl px-4">
-        <div className="w-full pointer-events-auto liquid-glass-elevated rounded-full p-1.5 relative">
-          {/* Sliding Liquid Glass Bubble with wobble spring on tab switch */}
+        <div className="w-full pointer-events-auto liquid-glass-elevated rounded-full p-1.5 relative overflow-hidden">
+          {/* Sliding Liquid Glass Bubble without edge overshoot on long jumps */}
           <div
             aria-hidden="true"
             className="absolute top-1.5 bottom-1.5 pointer-events-none"
             style={{
               left: `calc(6px + ${activeIndex} * ((100% - 12px) / 5))`,
               width: 'calc((100% - 12px) / 5)',
-              transition: 'left 480ms cubic-bezier(0.28, 1.38, 0.52, 1)'
+              transition: 'left 400ms cubic-bezier(0.22, 1, 0.36, 1)'
             }}
           >
             <div

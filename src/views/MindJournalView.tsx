@@ -50,10 +50,10 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
     e.preventDefault();
     if (!note.trim() && selectedTags.length === 0) return;
     onSaveEntry({
-      mood,
-      energy,
-      stress,
-      sleepQuality,
+      mood: Math.round(mood),
+      energy: Math.round(energy),
+      stress: Math.round(stress),
+      sleepQuality: Math.round(sleepQuality),
       tags: selectedTags,
       note: note.trim() || 'Tages-Check-in ohne Zusatznotiz.'
     });
@@ -62,30 +62,44 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
     setTimeout(() => setJustSaved(false), 2000);
   };
 
-  const renderSlider = (
+  const renderLiquidBar = (
     label: string,
     value: number,
     onChange: (val: number) => void,
     icon: React.ReactNode
-  ) => (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium flex items-center gap-1.5">
-          {icon}
-          <span>{label}</span>
-        </span>
-        <span className="font-mono font-semibold tabular-nums">{value}/10</span>
+  ) => {
+    const pct = Math.min(100, Math.max(8, ((value - 1) / 9) * 100));
+    const displayValue = Math.round(value);
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs px-0.5">
+          <span className="font-medium flex items-center gap-1.5">
+            {icon}
+            <span>{label}</span>
+          </span>
+          <span className="font-mono font-semibold tabular-nums">{displayValue}/10</span>
+        </div>
+        <div className="h-9 rounded-2xl kora-liquid-bar-track p-1 flex items-center select-none">
+          <div
+            className="kora-liquid-bar-fill h-full rounded-xl relative flex items-center justify-end pr-1"
+            style={{ width: `${pct}%` }}
+          >
+            <span className="w-5 h-5 rounded-lg bg-white/85 dark:bg-white/90 shadow-sm pointer-events-none shrink-0" />
+          </div>
+          <input
+            type="range"
+            aria-label={label}
+            min={1}
+            max={10}
+            step={0.05}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+          />
+        </div>
       </div>
-      <input
-        type="range"
-        min={1}
-        max={10}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full cursor-pointer"
-      />
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-5">
@@ -98,25 +112,25 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
 
       <form onSubmit={handleSubmit} className="liquid-glass rounded-[24px] p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {renderSlider(
+          {renderLiquidBar(
             'Stimmung',
             mood,
             setMood,
             <Heart className="w-3.5 h-3.5 text-accent" />
           )}
-          {renderSlider(
+          {renderLiquidBar(
             'Energie',
             energy,
             setEnergy,
             <Zap className="w-3.5 h-3.5 kora-muted" />
           )}
-          {renderSlider(
+          {renderLiquidBar(
             'Stress',
             stress,
             setStress,
             <Brain className="w-3.5 h-3.5 kora-muted" />
           )}
-          {renderSlider(
+          {renderLiquidBar(
             'Schlafqualität',
             sleepQuality,
             setSleepQuality,
@@ -191,16 +205,35 @@ export const MindJournalView: React.FC<MindJournalViewProps> = ({
           .slice()
           .reverse()
           .map((entry) => (
-            <article key={entry.id} className="liquid-glass rounded-[24px] p-4 space-y-2.5">
+            <article key={entry.id} className="liquid-glass rounded-[24px] p-4 space-y-3">
               <div className="flex items-center justify-between gap-2 text-xs">
                 <span className="font-semibold">{entry.dateKey}</span>
-                <div className="flex items-center gap-2 text-[11px] font-mono kora-muted tabular-nums">
-                  <span>Mood {entry.mood}/10</span>
-                  <span>•</span>
-                  <span>Energie {entry.energy}/10</span>
-                  <span>•</span>
-                  <span>Stress {entry.stress}/10</span>
-                </div>
+                <span className="text-[11px] font-mono kora-muted tabular-nums">
+                  Check-in
+                </span>
+              </div>
+
+              {/* Mini Liquid Glass Metric Bars */}
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: 'Mood', val: entry.mood },
+                  { label: 'Energie', val: entry.energy },
+                  { label: 'Stress', val: entry.stress },
+                  { label: 'Schlaf', val: entry.sleepQuality }
+                ].map((m) => (
+                  <div key={m.label} className="space-y-1">
+                    <div className="flex items-center justify-between text-[10px] kora-muted">
+                      <span>{m.label}</span>
+                      <span className="font-mono tabular-nums">{m.val}</span>
+                    </div>
+                    <div className="h-2 rounded-full kora-liquid-bar-track overflow-hidden">
+                      <div
+                        className="h-full rounded-full kora-liquid-bar-fill"
+                        style={{ width: `${Math.min(100, Math.max(10, m.val * 10))}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {entry.tags.length > 0 && (

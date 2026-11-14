@@ -61,7 +61,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
   onAskAiPlanAdapter
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'done'>('all');
-  const [collapsedIds, setCollapsedIds] = useState<Record<string, boolean>>({});
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -100,8 +100,8 @@ export const TrainView: React.FC<TrainViewProps> = ({
     }
   }, [activeWorkout.focusedExerciseId]);
 
-  const toggleCollapsed = (exId: string) => {
-    setCollapsedIds((prev) => ({ ...prev, [exId]: !prev[exId] }));
+  const toggleExpanded = (exId: string) => {
+    setExpandedIds((prev) => ({ ...prev, [exId]: !prev[exId] }));
   };
 
   return (
@@ -113,7 +113,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
         </div>
       )}
 
-      {/* Horizontal Plan Selector Pills */}
+      {/* Horizontal Flat Plan Selector Pills */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
         {plans.map((plan) => {
           const selected = plan.id === activePlan?.id;
@@ -122,16 +122,19 @@ export const TrainView: React.FC<TrainViewProps> = ({
               key={plan.id}
               type="button"
               onClick={() => onSelectPlan(plan.id)}
-              className={`shrink-0 rounded-full min-h-[42px] px-4 py-2 text-xs font-semibold transition cursor-pointer flex items-center gap-2 ${
-                selected ? 'btn-primary' : 'liquid-pill kora-muted hover:opacity-100'
+              className={`shrink-0 rounded-full min-h-[40px] px-4 py-2 text-xs transition cursor-pointer flex items-center gap-2 ${
+                selected
+                  ? 'bg-black/[0.08] dark:bg-white/[0.12] text-[var(--kora-text)] border border-black/15 dark:border-white/20 font-semibold'
+                  : 'bg-black/[0.03] dark:bg-white/[0.04] kora-muted border border-transparent font-medium hover:opacity-100'
               }`}
             >
+              {selected && <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />}
               <span>{plan.name}</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full tabular-nums ${
                   selected
-                    ? 'bg-white/20 dark:bg-black/15'
-                    : 'bg-black/[0.06] dark:bg-white/[0.08]'
+                    ? 'bg-black/[0.08] dark:bg-white/[0.14]'
+                    : 'bg-black/[0.05] dark:bg-white/[0.07]'
                 }`}
               >
                 {plan.exerciseIds.length}
@@ -143,14 +146,14 @@ export const TrainView: React.FC<TrainViewProps> = ({
         <button
           type="button"
           onClick={onAskAiPlanAdapter}
-          className="shrink-0 liquid-pill rounded-full min-h-[42px] px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
+          className="shrink-0 bg-black/[0.03] dark:bg-white/[0.04] border border-[var(--kora-hairline)] rounded-full min-h-[40px] px-4 py-2 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition"
         >
           <Sparkles className="w-3.5 h-3.5 text-accent" />
           <span>KI-Plan</span>
         </button>
       </div>
 
-      {/* Workout Action & 3-Segment Status Switch */}
+      {/* Workout Action & Flat 3-Segment Status Switch */}
       <div className="liquid-glass rounded-[24px] p-4 space-y-3.5">
         <div className="flex items-center justify-between gap-2.5">
           <div className="min-w-0">
@@ -189,15 +192,15 @@ export const TrainView: React.FC<TrainViewProps> = ({
           </div>
         </div>
 
-        {/* Clean 3-Segment Status Switch with sliding bubble */}
-        <div className="relative rounded-full bg-black/[0.05] dark:bg-white/[0.06] p-1">
+        {/* Flat Minimalist 3-Segment Status Switch */}
+        <div className="relative rounded-full bg-black/[0.035] dark:bg-white/[0.04] border border-[var(--kora-hairline)] p-0.5 overflow-hidden">
           <div
             aria-hidden="true"
-            className="absolute top-1 bottom-1 rounded-full btn-primary pointer-events-none"
+            className="absolute top-0.5 bottom-0.5 rounded-full bg-black/[0.08] dark:bg-white/[0.11] border border-black/10 dark:border-white/15 pointer-events-none"
             style={{
-              left: `calc(4px + ${statusIndex} * ((100% - 8px) / 3))`,
-              width: 'calc((100% - 8px) / 3)',
-              transition: 'left 360ms cubic-bezier(0.28, 1.28, 0.5, 1)'
+              left: `calc(2px + ${statusIndex} * ((100% - 4px) / 3))`,
+              width: 'calc((100% - 4px) / 3)',
+              transition: 'left 300ms cubic-bezier(0.22, 1, 0.36, 1)'
             }}
           />
           <div className="relative z-10 grid grid-cols-3">
@@ -206,10 +209,10 @@ export const TrainView: React.FC<TrainViewProps> = ({
                 key={st.id}
                 type="button"
                 onClick={() => setStatusFilter(st.id)}
-                className={`min-h-[38px] rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                className={`min-h-[36px] rounded-full text-xs cursor-pointer transition-colors ${
                   statusFilter === st.id
-                    ? 'text-white dark:text-black'
-                    : 'kora-muted hover:opacity-100'
+                    ? 'text-[var(--kora-text)] font-semibold'
+                    : 'kora-muted font-medium hover:opacity-100'
                 }`}
               >
                 {st.label}
@@ -219,11 +222,12 @@ export const TrainView: React.FC<TrainViewProps> = ({
         </div>
       </div>
 
-      {/* Exercise Cards */}
+      {/* Exercise Cards (collapsed by default, tap anywhere on card to expand) */}
       <div className="space-y-3.5">
         {filteredExercises.map((ex) => {
           const isFocused = activeWorkout.focusedExerciseId === ex.id;
-          const isCollapsed = Boolean(collapsedIds[ex.id]);
+          const isExpanded = Boolean(expandedIds[ex.id]);
+          const isCollapsed = !isExpanded;
           const doneCount = ex.sets.filter((s) => s.done).length;
           const allDone = ex.sets.length > 0 && doneCount === ex.sets.length;
           const gymNote = ex.gymSettings[activeWorkout.gym] || Object.values(ex.gymSettings)[0] || '';
@@ -234,15 +238,24 @@ export const TrainView: React.FC<TrainViewProps> = ({
               ref={(el) => {
                 cardRefs.current[ex.id] = el;
               }}
-              className={`liquid-glass rounded-[24px] p-3.5 sm:p-4 space-y-3 transition-all ${
-                isFocused ? 'kora-focus-ring' : ''
-              } ${allDone ? 'opacity-75' : ''}`}
-            >
-              {/* Header Row */}
-              <div
-                onClick={() => {
+              onClick={() => {
+                if (isCollapsed) {
                   onFocusExercise(ex.id);
-                  if (isCollapsed) toggleCollapsed(ex.id);
+                  toggleExpanded(ex.id);
+                }
+              }}
+              className={`liquid-glass rounded-[24px] p-3.5 sm:p-4 space-y-3 transition-all ${
+                isCollapsed
+                  ? 'cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
+                  : ''
+              } ${isFocused ? 'kora-focus-ring' : ''} ${allDone ? 'opacity-75' : ''}`}
+            >
+              {/* Header Row (tapping expands collapsed card or collapses open card) */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFocusExercise(ex.id);
+                  toggleExpanded(ex.id);
                 }}
                 className="flex items-start justify-between gap-2.5 cursor-pointer"
               >
@@ -277,7 +290,7 @@ export const TrainView: React.FC<TrainViewProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleCollapsed(ex.id);
+                      toggleExpanded(ex.id);
                     }}
                     aria-label={isCollapsed ? 'Sätze einblenden' : 'Sätze einklappen'}
                     className="liquid-pill w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
@@ -301,6 +314,19 @@ export const TrainView: React.FC<TrainViewProps> = ({
                   </button>
                 </div>
               </div>
+
+              {isCollapsed && (
+                <div className="h-[2px] w-full rounded-full bg-black/[0.06] dark:bg-white/[0.08] overflow-hidden">
+                  <div
+                    className="h-full bg-accent rounded-full transition-all duration-300"
+                    style={{
+                      width: `${
+                        ex.sets.length > 0 ? Math.round((doneCount / ex.sets.length) * 100) : 0
+                      }%`
+                    }}
+                  />
+                </div>
+              )}
 
               {!isCollapsed && (
                 <>

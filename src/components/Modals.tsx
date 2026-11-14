@@ -52,7 +52,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const radius = 70;
+  const radius = 82;
   const circumference = 2 * Math.PI * radius;
   const fraction = totalSeconds > 0 ? Math.min(1, Math.max(0, remainingSeconds / totalSeconds)) : 0;
   const offset = circumference - fraction * circumference;
@@ -80,15 +80,15 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           <p className="text-[11px] kora-muted mt-0.5">Läuft im Hintergrund exakt weiter</p>
         </div>
 
-        <div className="relative w-44 h-44 mx-auto flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r={radius} stroke="currentColor" strokeWidth="6" className="opacity-15" fill="none" />
+        <div className="relative w-52 h-52 mx-auto flex items-center justify-center">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 192 192">
+            <circle cx="96" cy="96" r={radius} stroke="currentColor" strokeWidth="5" className="opacity-15" fill="none" />
             <circle
-              cx="80"
-              cy="80"
+              cx="96"
+              cy="96"
               r={radius}
               stroke="var(--kora-accent)"
-              strokeWidth="6"
+              strokeWidth="5"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
@@ -97,10 +97,10 @@ export const TimerModal: React.FC<TimerModalProps> = ({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-mono font-semibold tracking-tight">
+            <span className="text-[42px] font-light tracking-wider tabular-nums leading-none">
               {formatSecondsClock(remainingSeconds)}
             </span>
-            <span className="text-[10px] uppercase tracking-widest kora-muted mt-1">
+            <span className="text-[10px] uppercase tracking-widest kora-muted mt-2">
               {remainingSeconds === 0 ? 'Zeit um' : isRunning ? 'Läuft' : 'Bereit'}
             </span>
           </div>
