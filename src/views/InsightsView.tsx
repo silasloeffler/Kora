@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, Trash2, TrendingUp } from 'lucide-react';
 import { Exercise, HealthConnectDailyMetric, WorkoutSessionRecord } from '../types/kora';
+import { PageHeader } from '../components/ui';
 
 interface InsightsViewProps {
   exercises: Exercise[];
@@ -30,13 +31,16 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
       : 0;
 
   return (
-    <div className="space-y-5">
-      <div className="px-1">
-        <p className="text-xs font-medium kora-muted">Analytics &amp; Verlauf</p>
-        <h2 className="text-[26px] leading-tight font-bold tracking-tight mt-0.5">
-          Insights &amp; Progression
-        </h2>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        eyebrow="Analytics & Verlauf"
+        title="Insights & Progression"
+        action={
+          <span className="liquid-pill px-3 py-1.5 rounded-full text-[11px] font-semibold tabular-nums">
+            {exercises.length} Übungen
+          </span>
+        }
+      />
 
       {/* Strength Recovery vs Peak */}
       <div className="liquid-glass rounded-[24px] p-4 space-y-3.5">
@@ -50,9 +54,6 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
               {avgRecovery}% Ø Kraft-Basis
             </p>
           </div>
-          <span className="liquid-pill px-3 py-1 rounded-full text-[11px] font-semibold tabular-nums">
-            {exercises.length} Übungen
-          </span>
         </div>
 
         <div className="space-y-2.5">
@@ -64,9 +65,9 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
                   {current} / {ex.topWeight} kg ({pct}%)
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-black/[0.06] dark:bg-white/[0.08] overflow-hidden">
+              <div className="h-1.5 rounded-full kora-liquid-bar-track overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-[#1d1d1f] dark:bg-[#f5f5f7] transition-all duration-500"
+                  className="h-full rounded-full kora-liquid-bar-fill transition-all duration-500"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -114,9 +115,9 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
               <span className="text-[10px] font-mono kora-muted tabular-nums">
                 {m.readinessScore}
               </span>
-              <div className="w-full max-w-[24px] flex-1 flex items-end bg-black/[0.05] dark:bg-white/[0.06] rounded-full overflow-hidden p-0.5">
+              <div className="w-full max-w-[24px] flex-1 flex items-end kora-liquid-bar-track rounded-full overflow-hidden p-0.5">
                 <div
-                  className="w-full rounded-full bg-accent transition-all"
+                  className="w-full rounded-full kora-liquid-bar-fill transition-all"
                   style={{ height: `${m.readinessScore}%` }}
                 />
               </div>
@@ -151,7 +152,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
       {/* Workout History List */}
       <div className="liquid-glass rounded-[24px] overflow-hidden divide-y kora-hairline-divider">
         <div className="px-4 py-3.5 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Workout-Historie</h3>
+          <h3 className="kora-eyebrow">Workout-Historie</h3>
           <span className="text-xs kora-muted tabular-nums">{history.length} Einheiten</span>
         </div>
 

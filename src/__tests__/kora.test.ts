@@ -5,9 +5,23 @@ import {
   formatSecondsClock,
   startWallClockTimer
 } from '../services/timer';
-import { mergeActiveWorkoutRecovery } from '../services/storage';
+import {
+  mergeActiveWorkoutRecovery,
+  parseImportedSnapshot
+} from '../services/storage';
 import { computeReadinessScore } from '../services/healthConnect';
 import { extractSuggestedPlan, isCronScheduleDueToday } from '../services/aiCoach';
+import {
+  cancelRestTimerNotification,
+  getNotificationPermissionStatus,
+  scheduleRestTimerNotification
+} from '../services/notifications';
+import {
+  LOGO_VARIANTS,
+  normalizeLogoVariant,
+  readSyncLogoVariant,
+  writeSyncLogoVariant
+} from '../components/KoraLogo';
 import { DEMO_SEED } from '../data/demoSeed';
 import { createExerciseFromCatalogItem, EXERCISE_CATALOG } from '../data/exerciseCatalog';
 import { isForbiddenPath } from '../../scripts/privacy-check.mjs';
@@ -156,5 +170,37 @@ describe('Privacy Guard (Personal Data Separation)', () => {
     expect(isForbiddenPath('src/data/demoSeed.ts')).toBe(false);
     expect(isForbiddenPath('src/data/exerciseCatalog.ts')).toBe(false);
     expect(isForbiddenPath('.env.example')).toBe(false);
+  });
+});
+
+describe('Logo Variants, Persistence & Background Notifications', () => {
+  it('exposes the 4 curated logo explorations including K·A·O and Holmes Wave Orbit', () => {
+    const ids = LOGO_VARIANTS.map((v) => v.id);
+    expect(ids).toEqual(expect.arrayContaining(['holmes', 'kao', 'orbital', 'eclipse']));
+    expect(ids.length).toBe(4);
+    expect(normalizeLogoVariant('yinyang')).toBe('holmes');
+    expect(normalizeLogoVariant('monogram')).toBe('kao');
+    expect(normalizeLogoVariant('compass')).toBe('orbital');
+  });
+
+  it('persists logoVariant across sync writes and backup imports', () => {
+    writeSyncLogoVariant('kao');
+    expect(readSyncLogoVariant()).toBe('kao');
+
+    const exported = JSON.stringify({
+      ...DEMO_SEED,
+      settings: { ...DEMO_SEED.settings, logoVariant: 'holmes' }
+    });
+    const imported = parseImportedSnapshot(exported);
+    expect(imported.settings.logoVariant).toBe('holmes');
+  });
+
+  it('safely handles background notification calls in non-browser/test runtimes', async () => {
+    const perm = await getNotificationPermissionStatus();
+    expect(['granted', 'denied', 'prompt']).toContain(perm);
+    await expect(
+      scheduleRestTimerNotification(Date.now() + 60_000, 'Chest Press', true)
+    ).resolves.toBeUndefined();
+    await expect(cancelRestTimerNotification()).resolves.toBeUndefined();
   });
 });

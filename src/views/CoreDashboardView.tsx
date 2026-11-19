@@ -8,8 +8,7 @@ import {
   HeartPulse,
   Moon,
   Play,
-  RefreshCw,
-  Sparkles
+  RefreshCw
 } from 'lucide-react';
 import {
   ActiveWorkoutState,
@@ -21,6 +20,8 @@ import {
   WorkoutSessionRecord
 } from '../types/kora';
 import { formatElapsedMinutes } from '../services/timer';
+import { KoraBadge, KoraLogo } from '../components/KoraLogo';
+import { PageHeader, RichText } from '../components/ui';
 
 interface CoreDashboardViewProps {
   userName: string;
@@ -61,31 +62,29 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Apple Music Style Large Header Row */}
-      <div className="px-1 pt-1 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium kora-muted">{activeGym} • Core Overview</p>
-          <h1 className="text-[28px] leading-tight font-bold tracking-tight mt-0.5">
-            Core, {userName}
-          </h1>
-        </div>
-        <button
-          type="button"
-          onClick={onSyncHealth}
-          className="liquid-pill min-h-[40px] rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
-        >
-          <RefreshCw
-            className={`w-3.5 h-3.5 kora-muted ${isSyncingHealth ? 'animate-spin text-accent' : ''}`}
-          />
-          <span>Sync</span>
-        </button>
-      </div>
+      <PageHeader
+        eyebrow={`${activeGym} • Core Overview`}
+        title={`Core, ${userName}`}
+        action={
+          <button
+            type="button"
+            onClick={onSyncHealth}
+            className="liquid-pill min-h-[44px] rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer active:scale-95 transition"
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isSyncingHealth ? 'animate-spin text-accent' : 'kora-muted'}`}
+            />
+            <span>Sync</span>
+          </button>
+        }
+      />
 
       {/* Active Session Recovery OR Clean Start Card */}
       {activeWorkout.isWorkoutActive ? (
-        <div className="liquid-glass-elevated rounded-[24px] p-4">
+        <div className="liquid-glass rounded-[24px] p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] flex items-center justify-center shrink-0">
+              <div className="liquid-pill w-11 h-11 rounded-full flex items-center justify-center shrink-0">
                 <Dumbbell className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -115,8 +114,8 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <div className="liquid-glass rounded-[24px] p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-full kora-orb flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-[#1d1d1f]" />
+              <div className="liquid-pill w-11 h-11 rounded-full flex items-center justify-center shrink-0">
+                <Dumbbell className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <p className="text-[15px] font-semibold tracking-tight">Heute trainieren</p>
@@ -128,7 +127,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => activePlan && onStartWorkout(activePlan.id)}
-              className="btn-primary min-h-[44px] px-5 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 hover:opacity-90 transition"
+              className="btn-accent min-h-[44px] px-5 py-2.5 rounded-full font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 transition"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>Starten</span>
@@ -186,24 +185,30 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
       {/* Kora Proactive Check-in */}
       <div className="liquid-glass rounded-[24px] p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            <span className="text-xs font-semibold tracking-tight">Kora Coach</span>
-            <span className="text-[11px] kora-muted">• Daily Cron</span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <KoraBadge size="sm" />
+            <div className="min-w-0 leading-tight">
+              <p className="text-[13px] font-semibold tracking-tight">Kora Coach</p>
+              <p className="text-[11px] kora-muted">Täglicher Check-in</p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onRunProactiveCheckin}
-            className="liquid-pill min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
+            className="liquid-pill min-h-[44px] px-4 py-2 rounded-full text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition"
           >
-            <Sparkles className="w-3.5 h-3.5 text-accent" />
+            <KoraLogo mono className="w-4 h-4" />
             <span>Check-in</span>
           </button>
         </div>
 
         <p className="text-[13px] leading-relaxed opacity-85 whitespace-pre-line">
-          {latestCoachMessage?.content ??
-            'Kora überwacht Trainingslast, Regeneration und Mental-Journal für dein optimales Tempo.'}
+          <RichText
+            text={
+              latestCoachMessage?.content ??
+              'Kora überwacht Trainingslast, Regeneration und Mental-Journal für dein optimales Tempo.'
+            }
+          />
         </p>
 
         <div className="flex items-center justify-between pt-2 border-t kora-hairline-divider">
@@ -214,7 +219,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigateTab('coach')}
-            className="text-xs font-semibold text-accent flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition min-h-[36px] px-2"
+            className="text-xs font-semibold text-accent flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition min-h-[44px] px-3"
           >
             <span>Coach öffnen</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -227,7 +232,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigateTab('train')}
-          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="kora-chip min-h-[44px] px-4 py-2 rounded-full text-xs flex items-center gap-2 cursor-pointer shrink-0 active:scale-95 transition"
         >
           <Dumbbell className="w-4 h-4" />
           <span>Training</span>
@@ -235,7 +240,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigateTab('mind')}
-          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="kora-chip min-h-[44px] px-4 py-2 rounded-full text-xs flex items-center gap-2 cursor-pointer shrink-0 active:scale-95 transition"
         >
           <Brain className="w-4 h-4" />
           <span>Tagebuch</span>
@@ -243,7 +248,7 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigateTab('insights')}
-          className="liquid-pill min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 hover:opacity-80 transition"
+          className="kora-chip min-h-[44px] px-4 py-2 rounded-full text-xs flex items-center gap-2 cursor-pointer shrink-0 active:scale-95 transition"
         >
           <BarChart3 className="w-4 h-4" />
           <span>Verlauf</span>
@@ -253,14 +258,12 @@ export const CoreDashboardView: React.FC<CoreDashboardViewProps> = ({
       {/* Recent Activity List with Hairline Dividers */}
       {(latestJournal || history.length > 0) && (
         <div className="liquid-glass rounded-[24px] overflow-hidden divide-y kora-hairline-divider">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider kora-muted">
-              Letzte Aktivität
-            </h3>
+          <div className="px-4 py-1.5 flex items-center justify-between">
+            <h3 className="kora-eyebrow">Letzte Aktivität</h3>
             <button
               type="button"
               onClick={() => onNavigateTab('insights')}
-              className="text-xs font-semibold text-accent cursor-pointer hover:opacity-80 transition py-1 px-2"
+              className="text-xs font-semibold text-accent cursor-pointer hover:opacity-80 transition min-h-[44px] px-3 flex items-center"
             >
               Alle
             </button>

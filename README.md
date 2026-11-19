@@ -72,3 +72,12 @@ Copy `.env.example` to `.env.local` and add `VITE_GEMINI_API_KEY` — or enter y
   cd android && ./gradlew assembleDebug
   ```
   *(Outputs `app/build/outputs/apk/debug/app-debug.apk`; local `.apk` artifacts remain excluded via `.gitignore`.)*
+
+---
+
+## Roadmap (Down the Line)
+
+See [ROADMAP.md](ROADMAP.md) for upcoming features and recent milestones:
+1. **Dynamic Island / Live Capsule für Poco (HyperOS / Android)** — Lockscreen & status-bar rest-timer / active workout capsule.
+2. **Gewichts-Progression & Kraft-Verlauf über die Zeit** — Historical weight, e1RM, and volume progression curves per exercise.
+3. **Dynamischer Workout-Startscreen** — Context-aware Core start screen that adapts dynamically once a workout is active.

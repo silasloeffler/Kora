@@ -1,6 +1,6 @@
 export type ThemeMode = 'dark' | 'light';
 
-export type LogoVariant = 'yinyang' | 'eclipse' | 'orbital' | 'monogram' | 'compass';
+export type LogoVariant = 'kao' | 'holmes' | 'orbital' | 'eclipse' | 'yinyang' | 'monogram' | 'compass';
 
 export type AppTab = 'core' | 'train' | 'mind' | 'coach' | 'insights';
 

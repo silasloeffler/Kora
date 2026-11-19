@@ -2,41 +2,57 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Kora Design Tokens — Minimalist Liquid Glass (Apple Music / PayPal / C24 style)
+ *
+ * Two surface types only:
+ *   1. .liquid-glass          → calm, flat translucent card (zero 3D bevels/rims)
+ *   2. .liquid-glass-elevated → floating chrome (header, dock, mini-player,
+ *                               toasts, sheets) with true Gaussian backdrop blur.
+ *
+ * IMPORTANT: Always declare -webkit-backdrop-filter BEFORE backdrop-filter so
+ * LightningCSS in `vite build` preserves the standard `backdrop-filter` property
+ * for modern Chromium / Android System WebView.
+ */
 :root {
-  --kora-bg: #f5f5f7;
-  --kora-surface: rgba(255, 255, 255, 0.66);
-  --kora-surface-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(242, 242, 247, 0.6) 100%);
-  --kora-surface-floating: rgba(255, 255, 255, 0.58);
-  --kora-surface-sub: rgba(0, 0, 0, 0.055);
+  color-scheme: light;
+  --kora-bg: #f2f2f7;
+  --kora-card: rgba(255, 255, 255, 0.88);
+  --kora-card-border: rgba(0, 0, 0, 0.06);
+  --kora-glass: rgba(246, 246, 250, 0.78);
+  --kora-glass-solid: rgba(248, 248, 252, 0.96);
+  --kora-glass-border: rgba(0, 0, 0, 0.08);
+  --kora-fill: rgba(0, 0, 0, 0.045);
+  --kora-fill-strong: rgba(0, 0, 0, 0.09);
+  --kora-fill-active-border: rgba(0, 0, 0, 0.12);
   --kora-text: #1d1d1f;
   --kora-muted: #6e6e73;
-  --kora-hairline: rgba(0, 0, 0, 0.08);
-  --kora-rim-top: rgba(255, 255, 255, 0.92);
-  --kora-rim-bottom: rgba(0, 0, 0, 0.06);
+  --kora-hairline: rgba(0, 0, 0, 0.075);
   --kora-accent: #fa2d48;
-  --kora-shadow-card: 0 4px 20px -6px rgba(0, 0, 0, 0.07);
-  --kora-shadow-floating: 0 14px 36px -8px rgba(0, 0, 0, 0.16);
-  --kora-backdrop-filter: blur(36px) saturate(210%) brightness(1.03);
-  --kora-backdrop-elevated: blur(44px) saturate(240%) brightness(1.04);
+  --kora-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --kora-shadow-floating: 0 10px 30px -10px rgba(0, 0, 0, 0.16);
+  --kora-blur: blur(32px) saturate(180%);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html.dark {
+  color-scheme: dark;
   --kora-bg: #000000;
-  --kora-surface: rgba(34, 34, 38, 0.58);
-  --kora-surface-sheen: linear-gradient(180deg, rgba(72, 72, 78, 0.42) 0%, rgba(26, 26, 30, 0.54) 100%);
-  --kora-surface-floating: rgba(44, 44, 48, 0.46);
-  --kora-surface-sub: rgba(255, 255, 255, 0.08);
+  --kora-card: rgba(28, 28, 32, 0.78);
+  --kora-card-border: rgba(255, 255, 255, 0.075);
+  --kora-glass: rgba(30, 30, 34, 0.78);
+  --kora-glass-solid: rgba(24, 24, 28, 0.96);
+  --kora-glass-border: rgba(255, 255, 255, 0.11);
+  --kora-fill: rgba(255, 255, 255, 0.055);
+  --kora-fill-strong: rgba(255, 255, 255, 0.12);
+  --kora-fill-active-border: rgba(255, 255, 255, 0.15);
   --kora-text: #f5f5f7;
   --kora-muted: #98989f;
-  --kora-hairline: rgba(255, 255, 255, 0.14);
-  --kora-rim-top: rgba(255, 255, 255, 0.28);
-  --kora-rim-bottom: rgba(0, 0, 0, 0.35);
-  --kora-shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
-  --kora-shadow-floating: 0 18px 44px -8px rgba(0, 0, 0, 0.85);
-  --kora-backdrop-filter: blur(34px) saturate(220%) brightness(1.12);
-  --kora-backdrop-elevated: blur(46px) saturate(260%) brightness(1.22);
+  --kora-hairline: rgba(255, 255, 255, 0.085);
+  --kora-shadow-card: none;
+  --kora-shadow-floating: 0 12px 34px -8px rgba(0, 0, 0, 0.82);
+  --kora-blur: blur(32px) saturate(180%);
 }
 
 html.plt-android,
@@ -47,6 +63,23 @@ html.plt-android,
 
 .phone-preview-bezel {
   transform: translateZ(0);
+}
+
+/*
+ * Tailwind v4 defaults border-color to currentColor. Set every default border
+ * to our subtle hairline token so dividers stay understated on OLED screens.
+ */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--kora-hairline);
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--kora-accent);
+    outline-offset: 2px;
+  }
 }
 
 html,
@@ -63,7 +96,7 @@ input[type="range"] {
   accent-color: var(--kora-accent);
 }
 
-/* Pure neutral backdrop + subtle depth glow behind glass */
+/* Neutral backdrop with a subtle top ambient wash */
 .kora-ambient-canvas {
   position: fixed;
   inset: 0;
@@ -72,171 +105,177 @@ input[type="range"] {
   background: var(--kora-bg);
 }
 
-.dark .kora-ambient-canvas::before {
+.kora-ambient-canvas::before {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(640px 420px at 18% 8%, color-mix(in srgb, var(--kora-accent) 11%, transparent), transparent 72%),
-    radial-gradient(760px 480px at 85% 92%, rgba(255, 255, 255, 0.05), transparent 70%);
+  background: radial-gradient(640px 360px at 18% 0%, color-mix(in srgb, var(--kora-accent) 8%, transparent), transparent 70%);
 }
 
-html.light .kora-ambient-canvas::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(700px 440px at 20% 6%, color-mix(in srgb, var(--kora-accent) 9%, transparent), transparent 70%),
-    radial-gradient(900px 520px at 50% -10%, rgba(255, 255, 255, 0.9), transparent 72%);
-}
-
-/* Subtle top status-bar blur/scrim under punch-hole camera on Android */
+/* Top status-bar blur scrim under the punch-hole camera */
 .kora-statusbar-scrim {
-  height: calc(var(--safe-top, 0px) + 10px);
-  background: linear-gradient(180deg, var(--kora-bg) 62%, transparent 100%);
+  height: calc(var(--safe-top, 0px) + 38px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--kora-bg) 90%, transparent) 0%,
+    color-mix(in srgb, var(--kora-bg) 55%, transparent) 45%,
+    color-mix(in srgb, var(--kora-bg) 16%, transparent) 78%,
+    transparent 100%
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000000 0%,
+    #000000 35%,
+    rgba(0, 0, 0, 0.65) 60%,
+    rgba(0, 0, 0, 0.2) 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000000 0%,
+    #000000 35%,
+    rgba(0, 0, 0, 0.65) 60%,
+    rgba(0, 0, 0, 0.2) 82%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Soft bottom gradient scrim so scrolling cards don't clash with the floating dock */
+.kora-bottom-scrim {
+  height: calc(var(--safe-bottom, 0px) + 7.5rem);
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--kora-bg) 94%, transparent) 0%,
+    color-mix(in srgb, var(--kora-bg) 68%, transparent) 52%,
+    color-mix(in srgb, var(--kora-bg) 22%, transparent) 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    0deg,
+    #000000 0%,
+    #000000 45%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.18) 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    0deg,
+    #000000 0%,
+    #000000 45%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.18) 88%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
 @layer components {
-  /*
-   * Isolated ::before Gaussian blur layer prevents Android Chromium Skia from
-   * dropping outer blurs when child pills or nested elements overlap.
-   */
+  /* 1 — Flat minimalist card (no 3D rims) */
   .liquid-glass {
     position: relative;
-    isolation: isolate;
-    background: var(--kora-surface);
-    border: 0.5px solid var(--kora-hairline);
-    box-shadow:
-      inset 0 1px 0.5px var(--kora-rim-top),
-      inset 0 -1px 0.5px var(--kora-rim-bottom),
-      var(--kora-shadow-card);
+    background: var(--kora-card);
+    border: 0.5px solid var(--kora-card-border);
+    box-shadow: var(--kora-shadow-card);
   }
 
-  .liquid-glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    z-index: -1;
-    pointer-events: none;
-    backdrop-filter: var(--kora-backdrop-filter);
-    -webkit-backdrop-filter: var(--kora-backdrop-filter);
-    transform: translateZ(0);
-  }
-
-  /* Apple Music Android style floating Liquid Glass bar */
+  /*
+   * 2 — Floating Liquid Glass chrome (Top Header, Workout Mini-Player, Bottom Dock,
+   *     Filter Bars, Modals). Uses direct backdrop-filter (with -webkit- first so
+   *     LightningCSS keeps standard backdrop-filter in production builds).
+   */
   .liquid-glass-elevated {
     position: relative;
-    isolation: isolate;
-    background: var(--kora-surface-sheen);
-    border: 0.5px solid var(--kora-hairline);
-    box-shadow:
-      inset 0 1px 1px var(--kora-rim-top),
-      inset 0 -1px 1px var(--kora-rim-bottom),
-      var(--kora-shadow-floating);
+    background: var(--kora-glass);
+    border: 0.5px solid var(--kora-glass-border);
+    box-shadow: var(--kora-shadow-floating);
+    -webkit-backdrop-filter: var(--kora-blur);
+    backdrop-filter: var(--kora-blur);
   }
 
-  .liquid-glass-elevated::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    z-index: -1;
-    pointer-events: none;
-    backdrop-filter: var(--kora-backdrop-elevated);
-    -webkit-backdrop-filter: var(--kora-backdrop-elevated);
-    will-change: backdrop-filter;
-    transform: translateZ(0);
+  /* Modal sheets: denser glass so forms & catalogs stay legible */
+  .kora-sheet {
+    background: var(--kora-glass-solid);
   }
 
-  /* No backdrop-filter on nested pills so outer glass blur stays active in WebView */
+  /* Secondary buttons, inputs & subtle pills (modeled after the Train filter) */
   .liquid-pill {
-    background: var(--kora-surface-sub);
+    background: var(--kora-fill);
     border: 0.5px solid var(--kora-hairline);
   }
+
+  /*
+   * Filter chips — exact same visual DNA as the Train segmented filter
+   * (Alle / Offen / Erledigt): flat matte fill when idle, stronger fill +
+   * hairline border when active.
+   */
+  .kora-chip {
+    background: var(--kora-fill);
+    border: 0.5px solid var(--kora-hairline);
+    color: var(--kora-muted);
+    font-weight: 500;
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+
+  .kora-chip.is-active {
+    background: var(--kora-fill-strong);
+    border-color: var(--kora-fill-active-border);
+    color: var(--kora-text);
+    font-weight: 600;
+  }
+
+  /* Segmented control track + sliding thumb (Train: Alle / Offen / Erledigt) */
+  .kora-segment {
+    background: var(--kora-fill);
+    border: 0.5px solid var(--kora-hairline);
+  }
+
+  .kora-segment-thumb {
+    background: var(--kora-fill-strong);
+    border: 0.5px solid var(--kora-fill-active-border);
+  }
+
+  /* Flat circular container for the Kora Orbit mark */
+  .kora-badge {
+    background: var(--kora-fill);
+    border: 0.5px solid var(--kora-hairline);
+  }
+
+  html.dark .kora-badge {
+    background: #1c1c1e;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
 }
 
-/* Sliding Liquid Glass Bubble inside Bottom Navigation Dock */
+/* Fallback if a WebView ever disables backdrop-filter */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid-glass-elevated {
+    background: var(--kora-glass-solid);
+  }
+}
+
+/* Sliding selection thumb inside the bottom dock — flat like the Train filter */
 .kora-dock-bubble {
-  background: rgba(0, 0, 0, 0.08);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.7);
-  transition: left 400ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: center center;
+  background: var(--kora-fill-strong);
+  border: 0.5px solid var(--kora-fill-active-border);
 }
 
-html.dark .kora-dock-bubble {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.11) 100%);
-  border: 0.5px solid rgba(255, 255, 255, 0.24);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.35);
-}
-
-@keyframes koraLiquidBubble {
-  0% {
-    transform: scaleX(1) scaleY(1);
-  }
-  28% {
-    transform: scaleX(1.12) scaleY(0.89);
-  }
-  60% {
-    transform: scaleX(0.95) scaleY(1.05);
-  }
-  84% {
-    transform: scaleX(1.02) scaleY(0.98);
-  }
-  100% {
-    transform: scaleX(1) scaleY(1);
-  }
-}
-
-.animate-liquid-bubble {
-  animation: koraLiquidBubble 460ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Smoothly animated Liquid Glass Journal & Recovery Bars */
+/* Flat minimalist Journal & Recovery tracks (no 3D neon glow) */
 .kora-liquid-bar-track {
   position: relative;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--kora-fill);
   border: 0.5px solid var(--kora-hairline);
 }
 
-html.dark .kora-liquid-bar-track {
-  background: rgba(255, 255, 255, 0.055);
-}
-
 .kora-liquid-bar-fill {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--kora-accent) 32%, transparent) 0%,
-    color-mix(in srgb, var(--kora-accent) 78%, transparent) 100%
-  );
-  box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.45),
-    0 0 16px color-mix(in srgb, var(--kora-accent) 28%, transparent);
-  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: color-mix(in srgb, var(--kora-accent) 78%, transparent);
+  transition: width 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes koraIconPop {
-  0% {
-    transform: scale(0.88);
-  }
-  50% {
-    transform: scale(1.16);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.animate-icon-pop {
-  animation: koraIconPop 360ms cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-
-/* Dynamic Custom Accent Utilities */
+/* Dynamic Accent Utilities */
 .text-accent {
   color: var(--kora-accent);
 }
@@ -249,13 +288,21 @@ html.dark .kora-liquid-bar-track {
   border-color: var(--kora-accent);
 }
 
+/* Primary call-to-action button */
 .btn-accent {
   background-color: var(--kora-accent);
   color: #ffffff;
 }
 
+/* Calm secondary action button (replaces stark white btn-primary in dark mode) */
+.btn-primary {
+  background: var(--kora-fill-strong);
+  border: 0.5px solid var(--kora-fill-active-border);
+  color: var(--kora-text);
+}
+
 .kora-focus-ring {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--kora-accent) 52%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--kora-accent) 55%, transparent);
 }
 
 .kora-svg-accent-fill {
@@ -267,7 +314,8 @@ html.dark .kora-liquid-bar-track {
   stroke: var(--kora-accent);
 }
 
-.kora-hairline-divider {
+.kora-hairline-divider,
+.kora-hairline-divider > * {
   border-color: var(--kora-hairline);
 }
 
@@ -275,24 +323,13 @@ html.dark .kora-liquid-bar-track {
   color: var(--kora-muted);
 }
 
-.btn-primary {
-  background-color: #1d1d1f;
-  color: #ffffff;
-}
-
-html.dark .btn-primary {
-  background-color: #f5f5f7;
-  color: #000000;
-}
-
-.kora-orb {
-  background: radial-gradient(circle at 32% 32%, #ffffff 0%, #d4d4d8 52%, #71717a 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-html.dark .kora-orb {
-  background: radial-gradient(circle at 32% 32%, #ffffff 0%, #a1a1aa 58%, #3f3f46 100%);
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.14);
+/* Small uppercase label used for in-card section titles */
+.kora-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kora-muted);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -304,16 +341,15 @@ html.dark .kora-orb {
 }
 
 @keyframes koraBreath {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.94;
+  0%,
+  100% {
+    opacity: 0.6;
   }
   50% {
-    transform: scale(1.04);
     opacity: 1;
   }
 }
 
-.animate-kora-orb {
-  animation: koraBreath 5s ease-in-out infinite;
+.animate-kora-breath {
+  animation: koraBreath 2.4s ease-in-out infinite;
 }

@@ -29,7 +29,15 @@ import {
 } from './services/timer';
 import { syncHealthConnectTelemetry } from './services/healthConnect';
 import { askKoraCoach, isCronScheduleDueToday } from './services/aiCoach';
+import {
+  cancelRestTimerNotification,
+  initNotificationChannels,
+  requestNotificationPermission,
+  scheduleRestTimerNotification,
+  sendImmediateNotification
+} from './services/notifications';
 import { FloatingWorkoutPill, KoraDock, TopGlassHeader } from './components/FloatingChrome';
+import { KoraLogo, writeSyncLogoVariant } from './components/KoraLogo';
 import { AddExerciseModal, SettingsModal, TimerModal } from './components/Modals';
 import { CoreDashboardView } from './views/CoreDashboardView';
 import { TrainView } from './views/TrainView';
@@ -58,8 +66,16 @@ export function App() {
   );
   const [phonePreview, setPhonePreview] = useState(true);
 
+  const appSurfaceRef = useRef<HTMLDivElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const timerFinishedAlertedRef = useRef(false);
+
+  const scrollToTopSmooth = useCallback(() => {
+    appSurfaceRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
@@ -111,6 +127,17 @@ export function App() {
     if (!snapshot) return;
     writeSyncAccent(snapshot.settings.accentColor || '#fa2d48');
   }, [snapshot?.settings.accentColor]);
+
+  // Sync active logo variant across root & KoraLogo subscribers
+  useEffect(() => {
+    if (!snapshot) return;
+    writeSyncLogoVariant(snapshot.settings.logoVariant || 'holmes');
+  }, [snapshot?.settings.logoVariant]);
+
+  // Initialize Android notification channels once on mount
+  useEffect(() => {
+    void initNotificationChannels();
+  }, []);
 
   // Track responsive desktop viewport for optional Nothing Phone 2a preview frame
   useEffect(() => {
@@ -207,6 +234,23 @@ export function App() {
         timerFinishedAlertedRef.current = true;
         playCompletionBeep();
         showToast('Pause beendet — nächster Satz!');
+        if (
+          !Capacitor.isNativePlatform() &&
+          typeof document !== 'undefined' &&
+          document.visibilityState === 'hidden' &&
+          snapshot.settings.notificationsEnabled
+        ) {
+          const activeEx = snapshot.exercises.find(
+            (e) => e.id === snapshot.activeWorkout.focusedExerciseId
+          );
+          void sendImmediateNotification(
+            'Satzpause beendet 💪',
+            activeEx?.name
+              ? `Weiter geht's mit ${activeEx.name} — nächster Satz!`
+              : 'Deine Pause ist um — bereit für den nächsten Satz!',
+            'kora-rest-timer'
+          );
+        }
         commitSnapshot((draft) => {
           draft.activeWorkout.restTimerTargetEndTime = null;
           draft.activeWorkout.restTimerPausedRemaining = 0;
@@ -230,10 +274,10 @@ export function App() {
 
   if (!snapshot) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050810] text-slate-200">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--kora-bg)] text-[var(--kora-text)]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-full kora-orb animate-kora-orb" />
-          <p className="text-xs font-semibold tracking-wide opacity-75">Kora Core wird geladen...</p>
+          <KoraLogo className="w-12 h-12 animate-kora-breath" />
+          <p className="text-xs font-semibold tracking-wide kora-muted">Kora Core wird geladen...</p>
         </div>
       </div>
     );
@@ -247,7 +291,7 @@ export function App() {
     (e) => e.id === snapshot.activeWorkout.focusedExerciseId
   );
 
-  const handleStartRestTimer = (seconds: number) => {
+  const handleStartRestTimer = (seconds: number, exerciseNameOverride?: string) => {
     timerFinishedAlertedRef.current = false;
     const started = startWallClockTimer(seconds);
     commitSnapshot((draft) => {
@@ -255,6 +299,18 @@ export function App() {
       draft.activeWorkout.restTimerTotalSeconds = started.restTimerTotalSeconds;
       draft.activeWorkout.restTimerPausedRemaining = null;
     });
+    if (snapshot.settings.notificationsEnabled) {
+      const targetExerciseName = exerciseNameOverride ?? focusedExercise?.name;
+      void requestNotificationPermission().then((granted) => {
+        if (granted) {
+          void scheduleRestTimerNotification(
+            started.restTimerTargetEndTime,
+            targetExerciseName,
+            true
+          );
+        }
+      });
+    }
   };
 
   const handleToggleTimer = () => {
@@ -265,6 +321,7 @@ export function App() {
         draft.activeWorkout.restTimerTargetEndTime = null;
         draft.activeWorkout.restTimerPausedRemaining = rem;
       });
+      void cancelRestTimerNotification();
     } else {
       const startFrom =
         aw.restTimerPausedRemaining && aw.restTimerPausedRemaining > 0
@@ -288,6 +345,15 @@ export function App() {
       draft.activeWorkout.restTimerTotalSeconds = nextTimer.restTimerTotalSeconds;
       draft.activeWorkout.restTimerPausedRemaining = nextTimer.restTimerPausedRemaining;
     });
+    if (nextTimer.restTimerTargetEndTime !== null && snapshot.settings.notificationsEnabled) {
+      void scheduleRestTimerNotification(
+        nextTimer.restTimerTargetEndTime,
+        focusedExercise?.name,
+        true
+      );
+    } else {
+      void cancelRestTimerNotification();
+    }
   };
 
   const handleResetTimer = () => {
@@ -296,6 +362,7 @@ export function App() {
       draft.activeWorkout.restTimerTargetEndTime = null;
       draft.activeWorkout.restTimerPausedRemaining = draft.activeWorkout.restTimerTotalSeconds;
     });
+    void cancelRestTimerNotification();
   };
 
   const handleStartWorkout = (planId?: string) => {
@@ -380,8 +447,10 @@ export function App() {
       draft.activeWorkout.restTimerPausedRemaining = null;
     });
 
+    void cancelRestTimerNotification();
     showToast('Workout gespeichert & Progression aktualisiert!');
     setActiveTab('insights');
+    scrollToTopSmooth();
   };
 
   const handleSyncHealth = async () => {
@@ -550,6 +619,54 @@ export function App() {
     showToast(source === 'personal' ? 'Silas Seed geladen' : 'Portfolio Demo geladen');
   };
 
+  const handleUpdateSettings = (patch: Partial<AppSettings>) => {
+    if (patch.notificationsEnabled === true) {
+      void requestNotificationPermission().then((granted) => {
+        if (!granted) {
+          showToast('Bitte Benachrichtigungen im System erlauben');
+        }
+      });
+    } else if (patch.notificationsEnabled === false) {
+      void cancelRestTimerNotification();
+    }
+    commitSnapshot((draft) => {
+      draft.settings = { ...draft.settings, ...patch };
+    });
+  };
+
+  const handleTestNotification = async () => {
+    const sent = await sendImmediateNotification(
+      'Kora Core Test 💪',
+      'Satzpausen- & Coach-Benachrichtigungen funktionieren auch außerhalb der App.',
+      'kora-test'
+    );
+    showToast(
+      sent
+        ? 'Test-Benachrichtigung gesendet'
+        : 'Bitte Benachrichtigungen im Browser/System erlauben'
+    );
+  };
+
+  const handleToggleCron = (cronId: string) => {
+    commitSnapshot((draft) => {
+      draft.cronSchedules = draft.cronSchedules.map((c) =>
+        c.id === cronId ? { ...c, enabled: !c.enabled } : c
+      );
+    });
+  };
+
+  const handleAddCron = (newCron: Omit<CronSchedule, 'id' | 'lastRunAt'>) => {
+    commitSnapshot((draft) => {
+      const item: CronSchedule = {
+        ...newCron,
+        id: `cron_${Date.now()}`,
+        lastRunAt: null
+      };
+      draft.cronSchedules.push(item);
+    });
+    showToast(`Automatisierung "${newCron.name}" aktiviert`);
+  };
+
   const showFloatingWorkoutPill =
     snapshot.activeWorkout.isWorkoutActive ||
     isTimerRunning ||
@@ -561,6 +678,7 @@ export function App() {
 
   const appSurface = (
     <div
+      ref={appSurfaceRef}
       className={
         showPhoneFrame
           ? 'relative h-full w-full overflow-y-auto no-scrollbar pb-44'
@@ -585,7 +703,7 @@ export function App() {
         userName={snapshot.settings.userName}
         activeGym={snapshot.activeWorkout.gym}
         gyms={snapshot.settings.gyms}
-        logoVariant={snapshot.settings.logoVariant || 'orbital'}
+        logoVariant={snapshot.settings.logoVariant || 'holmes'}
         readinessScore={latestHealth?.readinessScore ?? 85}
         onChangeGym={(gym) => {
           commitSnapshot((draft) => {
@@ -611,15 +729,20 @@ export function App() {
             isSyncingHealth={isSyncingHealth}
             onSyncHealth={() => void handleSyncHealth()}
             onStartWorkout={handleStartWorkout}
-            onResumeWorkout={() => setActiveTab('train')}
+            onResumeWorkout={() => {
+              setActiveTab('train');
+              scrollToTopSmooth();
+            }}
             onNavigateTab={(tab) => {
               if (tab === 'coach') setHasUnreadProactive(false);
               setActiveTab(tab);
+              scrollToTopSmooth();
             }}
             onRunProactiveCheckin={() => {
               const firstCron = snapshot.cronSchedules[0];
               if (firstCron) void handleRunCronNow(firstCron.id);
               setActiveTab('coach');
+              scrollToTopSmooth();
             }}
           />
         )}
@@ -659,6 +782,7 @@ export function App() {
             onToggleSetDone={(exId, setId) => {
               let completedNow = false;
               let restSec = 90;
+              let exName: string | undefined;
               commitSnapshot((draft) => {
                 draft.activeWorkout.isWorkoutActive = true;
                 draft.activeWorkout.startedAt = draft.activeWorkout.startedAt ?? Date.now();
@@ -670,10 +794,11 @@ export function App() {
                   st.completedAt = st.done ? Date.now() : undefined;
                   completedNow = st.done;
                   restSec = ex?.defaultRestSeconds ?? 90;
+                  exName = ex?.name;
                 }
               });
               if (completedNow) {
-                handleStartRestTimer(restSec);
+                handleStartRestTimer(restSec, exName);
               }
             }}
             onAddSet={(exId) =>
@@ -733,30 +858,12 @@ export function App() {
         {activeTab === 'coach' && (
           <CoachView
             messages={snapshot.coachMessages}
-            cronSchedules={snapshot.cronSchedules}
             hasGeminiKey={Boolean(snapshot.settings.geminiApiKey.trim())}
             modelName={snapshot.settings.geminiModel}
             isSending={isSendingCoach}
             onSendMessage={(p) => void handleSendCoachMessage(p)}
             onApplySuggestedPlan={handleApplySuggestedPlan}
-            onToggleCron={(cronId) =>
-              commitSnapshot((draft) => {
-                draft.cronSchedules = draft.cronSchedules.map((c) =>
-                  c.id === cronId ? { ...c, enabled: !c.enabled } : c
-                );
-              })
-            }
-            onRunCronNow={(cronId) => void handleRunCronNow(cronId)}
-            onAddCron={(newCron) =>
-              commitSnapshot((draft) => {
-                const item: CronSchedule = {
-                  ...newCron,
-                  id: `cron_${Date.now()}`,
-                  lastRunAt: null
-                };
-                draft.cronSchedules.push(item);
-              })
-            }
+            onOpenSettings={() => setSettingsOpen(true)}
           />
         )}
 
@@ -794,7 +901,12 @@ export function App() {
         isWorkoutActive={snapshot.activeWorkout.isWorkoutActive}
         onSelectTab={(tab) => {
           if (tab === 'coach') setHasUnreadProactive(false);
-          setActiveTab(tab);
+          if (tab === activeTab) {
+            scrollToTopSmooth();
+          } else {
+            setActiveTab(tab);
+            scrollToTopSmooth();
+          }
         }}
       />
 
@@ -829,13 +941,15 @@ export function App() {
       <SettingsModal
         isOpen={settingsOpen}
         settings={snapshot.settings}
+        cronSchedules={snapshot.cronSchedules}
+        isSendingCoach={isSendingCoach}
         hasPersonalLocalSeed={hasPersonalLocalSeed}
         onClose={() => setSettingsOpen(false)}
-        onUpdateSettings={(patch: Partial<AppSettings>) =>
-          commitSnapshot((draft) => {
-            draft.settings = { ...draft.settings, ...patch };
-          })
-        }
+        onUpdateSettings={handleUpdateSettings}
+        onToggleCron={handleToggleCron}
+        onRunCronNow={(cronId) => void handleRunCronNow(cronId)}
+        onAddCron={handleAddCron}
+        onTestNotification={() => void handleTestNotification()}
         onExportBackup={handleExportBackup}
         onImportBackup={(f) => void handleImportBackup(f)}
         onSwitchSeed={(source) => void handleSwitchSeed(source)}

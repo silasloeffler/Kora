@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
+import { writeSyncLogoVariant } from '../components/KoraLogo';
 import { DEMO_SEED } from '../data/demoSeed';
-import { ActiveWorkoutState, KoraSnapshot } from '../types/kora';
+import { ActiveWorkoutState, KoraSnapshot, LogoVariant } from '../types/kora';
 
 const ACTIVE_SESSION_LS_KEY = 'kora_active_workout_v1';
 const THEME_LS_KEY = 'kora_theme_v1';
@@ -115,8 +116,9 @@ function applyEnvDefaults(snapshot: KoraSnapshot): KoraSnapshot {
   if (envApiKey && !snapshot.settings.geminiApiKey) {
     snapshot.settings.geminiApiKey = envApiKey;
   }
+  const defaultLogoVariant: LogoVariant = 'holmes';
   snapshot.settings.accentColor = snapshot.settings.accentColor || '#fa2d48';
-  snapshot.settings.logoVariant = snapshot.settings.logoVariant || 'yinyang';
+  snapshot.settings.logoVariant = snapshot.settings.logoVariant || defaultLogoVariant;
   return snapshot;
 }
 
@@ -132,6 +134,7 @@ export async function loadInitialSnapshot(): Promise<{
       snap.activeWorkout = mergeActiveWorkoutRecovery(snap.activeWorkout, syncActive);
       writeSyncTheme(snap.settings.theme);
       writeSyncAccent(snap.settings.accentColor);
+      writeSyncLogoVariant(snap.settings.logoVariant);
       return {
         snapshot: snap,
         recoveredActiveWorkout: snap.activeWorkout.isWorkoutActive
@@ -145,6 +148,7 @@ export async function loadInitialSnapshot(): Promise<{
   const initial = applyEnvDefaults(cloneSnapshot(personal ?? DEMO_SEED));
   writeSyncTheme(initial.settings.theme);
   writeSyncAccent(initial.settings.accentColor);
+  writeSyncLogoVariant(initial.settings.logoVariant);
   writeSyncActiveWorkout(initial.activeWorkout);
 
   try {
@@ -167,6 +171,7 @@ export async function persistSnapshot(snapshot: KoraSnapshot): Promise<void> {
   writeSyncActiveWorkout(snapshot.activeWorkout);
   writeSyncTheme(snapshot.settings.theme);
   writeSyncAccent(snapshot.settings.accentColor);
+  writeSyncLogoVariant(snapshot.settings.logoVariant);
   try {
     await koraDb.snapshots.put({
       id: 'primary',
@@ -187,6 +192,7 @@ export async function switchSeedProfile(source: 'personal' | 'demo'): Promise<Ko
     next = cloneSnapshot(DEMO_SEED);
   }
   applyEnvDefaults(next);
+  writeSyncLogoVariant(next.settings.logoVariant);
   await persistSnapshot(next);
   return next;
 }
